@@ -19,10 +19,10 @@
 - [x] T010 [H3] `web/templates/base.html` e `app.css`: **Entrar com Google** ou **Sair** no cabeçalho, a 360 px
 
 ## Fase 4 — Configuração e acabamento
-- [ ] T011 [P] `.env.example` e `render.yaml` (`sync: false` para as credenciais, `GOOGLE_REDIRECT_URI` fixo)
-- [ ] T012 [P] `README.md` (como criar o cliente OAuth) e status da spec
-- [ ] T013 Conferir à mão com o cliente OAuth da dupla: entrar, comprar, sair, entrar de novo; se as credenciais não existirem até o congelamento, registrar aqui
-- [ ] T014 `pytest`, `ruff check`, `ruff format --check` e `mypy` sem erros
+- [x] T011 [P] `.env.example` e `render.yaml` (`sync: false` para as credenciais, `GOOGLE_REDIRECT_URI` fixo)
+- [x] T012 [P] `README.md` (como criar o cliente OAuth) e status da spec
+- [ ] T013 Conferir à mão com o cliente OAuth da dupla: entrar, comprar, sair, entrar de novo; se as credenciais não existirem até o congelamento, registrar aqui — pendente em 05/10: o cliente OAuth ainda não foi criado (`GOOGLE_CLIENT_ID` vazio no `.env`). Conferido no servidor local com um ID falso: o botão aparece, `/entrar` redireciona ao Google com `state`, `nonce` e `code_challenge`, e um retorno sem tentativa volta ao início sem erro
+- [x] T014 `pytest`, `ruff check`, `ruff format --check` e `mypy` sem erros
 
 ## Dependências
 Fase 1 → Fase 2 → Fase 3 → Fase 4. Em cada fase, os testes vêm antes da implementação. T009 depende de T006 e T008.

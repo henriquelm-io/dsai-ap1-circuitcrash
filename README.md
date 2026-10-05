@@ -6,7 +6,7 @@ Puzzle de circuitos por turnos para 4 jogadores, jogado no navegador do computad
 
 **Jogue online:** <https://circuitcrash.onrender.com/> (plano gratuito do Render: o primeiro acesso depois de um tempo parado pode levar alguns segundos)
 
-Esta versão traz a **interface web completa**: partida de demonstração jogável, perfil, loja de avatares, ranking e regras. Os dados ficam num **banco SQLite** (ou PostgreSQL), ou em memória se nenhum banco for configurado. O login vem na próxima spec.
+Esta versão traz a **interface web completa**: partida de demonstração jogável, perfil, loja de avatares, ranking e regras. Os dados ficam num **banco SQLite** (ou PostgreSQL), ou em memória se nenhum banco for configurado. Quem quiser entra com a **conta Google** e ganha um perfil próprio; sem login, os perfis de demonstração continuam funcionando.
 
 ## Stack
 | Camada | Tecnologia |
@@ -59,6 +59,18 @@ $env:HOST = "0.0.0.0"; uv run python -m circuitcrash
 ```
 Descubra o IP do computador com `ipconfig` e abra `http://<ip>:8000` no celular. Se o Windows perguntar sobre o firewall, permita em redes privadas.
 
+### Login com Google
+Sem as credenciais no `.env`, o botão **Entrar com Google** não aparece e o site funciona só com os perfis de demonstração. Para ligar o login (spec `specs/008-login-google/`):
+1. Em <https://console.cloud.google.com>, crie (ou escolha) um projeto.
+2. Em **APIs e serviços → Tela de consentimento OAuth**, escolha **Externo**, preencha o nome do app e os e-mails de contato, e em **Usuários de teste** adicione o e-mail de cada pessoa que vai entrar (em modo de teste, só elas conseguem).
+3. Em **APIs e serviços → Credenciais → Criar credenciais → ID do cliente OAuth**, escolha **Aplicativo da Web** e cadastre em **URIs de redirecionamento autorizados**:
+   - `http://127.0.0.1:8000/auth/google/retorno` (local)
+   - `https://circuitcrash.onrender.com/auth/google/retorno` (publicado)
+4. Copie o ID do cliente e a chave secreta para o `.env` (`GOOGLE_CLIENT_ID` e `GOOGLE_CLIENT_SECRET`) e reinicie o servidor. Abra pelo endereço `http://127.0.0.1:8000` (não `localhost`), igual ao cadastrado.
+5. No Render, preencha as mesmas duas variáveis em **Environment** (o `render.yaml` já as declara sem valor). Nunca coloque os valores no repositório nem no chat; se a chave vazar, gere outra no Console.
+
+Na versão publicada, o banco volta ao exemplo a cada reinício, então os perfis criados pelo Google somem quando o serviço dorme.
+
 ## Publicação (Render)
 O serviço é descrito no `render.yaml` (spec `specs/004-publicacao/`). Um push na `main` publica a versão nova sozinho. A cada início, a carga roda com `--recriar` antes do servidor subir, então a demonstração sempre começa com os dados de exemplo; trocas de avatar somem quando o serviço reinicia ou dorme.
 
@@ -86,6 +98,7 @@ uv run mypy
 | `src/circuitcrash/domain/` | Regras do jogo e da loja, em Python puro |
 | `src/circuitcrash/dados/` | Contrato `Repositorio`, versão em memória (`memoria.py`) e com banco (`sql.py`, `tabelas.py`, `carga.py`) |
 | `migracoes/` | Migrações do banco (Alembic) |
+| `src/circuitcrash/login/` | Conversa com o Google no login (OpenID Connect com PKCE, só biblioteca padrão) |
 | `src/circuitcrash/web/` | Templates Jinja2, CSS e conversão do estado para a tela |
 | `src/circuitcrash/app.py` | Rotas |
 | `SPEC/` | Uma spec por funcionalidade, com data: o quê e por quê, critérios de aceitação e fora do escopo |

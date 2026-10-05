@@ -1,6 +1,6 @@
 # Spec 008 — Login com a conta Google
 
-**Branch:** `008-login-google` · **Status:** proposta, sem código ainda · **Criada em:** 05/10/2026 · **Dono:** Severino · **Origem:** [SPEC/2026-10-05-login-google.md](../../SPEC/2026-10-05-login-google.md)
+**Branch:** `008-login-google` · **Status:** implementada, aguardando revisão no PR · **Criada em:** 05/10/2026 · **Dono:** Severino · **Origem:** [SPEC/2026-10-05-login-google.md](../../SPEC/2026-10-05-login-google.md)
 
 ## Contexto
 A spec 001 entregou as telas sem login, com o seletor **Demo como** para alternar entre dois perfis de exemplo. A spec 002 deixou no cadastro de jogadores o espaço para o identificador da conta Google (`google_sub`, único e vazio), e todas as specs até aqui puseram o login fora do escopo. Esta spec liga o login com a conta Google, para cada pessoa ter o próprio perfil.

@@ -1,6 +1,6 @@
 # Login com a conta Google
 
-**Data:** 05/10/2026 · **Status:** proposta, sem código ainda · **Branch:** `008-login-google` · **Detalhes:** `specs/008-login-google/`
+**Data:** 05/10/2026 · **Status:** implementada, aguardando revisão no PR · **Branch:** `008-login-google` · **Detalhes:** `specs/008-login-google/`
 
 ## O quê
 Qualquer pessoa entra no CircuitCrash com a própria conta Google, pelo botão **Entrar com Google** do cabeçalho. Na primeira vez, o sistema cria um jogador novo com o nome e o e-mail da conta Google: começa sem Fagulhas, sem avatar e com rating 1200. Nas vezes seguintes, volta para o mesmo jogador. Quem entrou vê **Sair** no lugar do seletor **Demo como**, e tudo o que fizer (comprar, trocar de avatar, jogar) fica no próprio perfil.
