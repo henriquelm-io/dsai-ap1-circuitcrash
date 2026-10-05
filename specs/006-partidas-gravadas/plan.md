@@ -70,6 +70,7 @@ def resultado_da_partida(jogador, tipo, colocacao, pontos, objetivos, adversario
 def fagulhas_ganhas_hoje(self, jogador_id: str) -> int:
     """Soma das Fagulhas ganhas em partidas que terminaram hoje."""
 
+
 def registrar_partida(self, jogador_id: str, resultado: ResultadoPartida) -> None:
     """Grava a partida e aplica o resultado ao jogador, tudo ou nada.
     Levanta ValueError se o jogador não existe."""
