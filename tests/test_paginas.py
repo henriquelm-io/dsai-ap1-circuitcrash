@@ -1,7 +1,11 @@
+from collections.abc import Iterator
+from pathlib import Path
+
 import pytest
 from starlette.testclient import TestClient
 
 from circuitcrash.app import criar_app
+from conftest import criar_repo_sql
 
 
 @pytest.fixture
@@ -44,3 +48,32 @@ def test_comprar_avatar_mostra_aviso(cliente: TestClient) -> None:
     resposta = cliente.post("/loja/comprar", data={"avatar_id": "onda"})
     assert resposta.status_code == 200
     assert "Onda é seu" in resposta.text
+
+
+# ---------- com o banco (spec 002) ----------
+
+
+@pytest.fixture
+def cliente_sql(tmp_path: Path) -> Iterator[TestClient]:
+    repo = criar_repo_sql(tmp_path)
+    yield TestClient(criar_app(repo))
+    repo.fechar()
+
+
+@pytest.mark.parametrize("rota", ["/", "/perfil", "/loja", "/loja?raridade=raro", "/ranking", "/regras"])
+def test_paginas_com_banco_iguais_as_da_memoria(cliente: TestClient, cliente_sql: TestClient, rota: str) -> None:
+    resposta = cliente_sql.get(rota)
+    assert resposta.status_code == 200
+    assert resposta.text == cliente.get(rota).text
+
+
+def test_paginas_do_novato_com_banco(cliente: TestClient, cliente_sql: TestClient) -> None:
+    for c in (cliente, cliente_sql):
+        c.post("/jogador", data={"jogador_id": "novato"})
+    assert cliente_sql.get("/perfil").text == cliente.get("/perfil").text
+
+
+def test_compra_com_banco_aparece_no_perfil(cliente_sql: TestClient) -> None:
+    resposta = cliente_sql.post("/loja/comprar", data={"avatar_id": "onda"})
+    assert "Onda é seu" in resposta.text
+    assert "Onda" in cliente_sql.get("/perfil").text
