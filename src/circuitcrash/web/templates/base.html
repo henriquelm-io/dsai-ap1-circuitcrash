@@ -1,0 +1,58 @@
+{% from "_macros.html" import raio, avatar %}<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0B1020">
+  <title>{% block titulo %}CircuitCrash{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap">
+  <link rel="stylesheet" href="{{ url_for('static', path='css/app.css') }}">
+  <link rel="icon" href="{{ url_for('static', path='img/icone.svg') }}" type="image/svg+xml">
+  <script src="https://unpkg.com/htmx.org@2.0.4" defer></script>
+</head>
+<body>
+  <header class="topo">
+    <a class="marca" href="/">{{ raio(26, "#F5A524", false) }}CIRCUIT<span>CRASH</span></a>
+    <nav class="nav" aria-label="Principal">
+      <a href="/" {% if pagina == "jogar" %}aria-current="page"{% endif %}>Jogar</a>
+      <a href="/ranking" {% if pagina == "ranking" %}aria-current="page"{% endif %}>Ranking</a>
+      <a href="/loja" {% if pagina == "loja" %}aria-current="page"{% endif %}>Loja</a>
+      <a href="/perfil" {% if pagina == "perfil" %}aria-current="page"{% endif %}>Perfil</a>
+      <a href="/regras" {% if pagina == "regras" %}aria-current="page"{% endif %}>Regras</a>
+    </nav>
+    <div class="topo-direita">
+      <form class="demo-troca" method="post" action="/jogador">
+        <label for="jogador_id">Demo como</label>
+        <select id="jogador_id" name="jogador_id" onchange="this.form.submit()" aria-label="Trocar jogador de demonstração">
+          {% for j in jogadores_demo %}
+          <option value="{{ j.id }}" {% if j.id == eu.id %}selected{% endif %}>{{ j.apelido }}{% if j.provisorio %} (novo){% endif %}</option>
+          {% endfor %}
+        </select>
+        <noscript><button class="botao pequeno" type="submit">Trocar</button></noscript>
+      </form>
+      <span class="carteira" title="Suas Fagulhas">{{ raio(15) }}<span class="visualmente-oculto">Fagulhas: </span>{{ eu.fagulhas }}</span>
+      <a href="/perfil" aria-label="Seu perfil">{{ avatar(meu_avatar, eu, 40) }}</a>
+    </div>
+  </header>
+
+  <main class="pagina" id="conteudo">
+    {% if aviso %}
+    <div class="aviso {% if not aviso.ok %}erro{% endif %}" role="status">{{ aviso.texto }}</div>
+    {% endif %}
+    {% block conteudo %}{% endblock %}
+  </main>
+
+  <nav class="nav-inferior" aria-label="Principal no celular">
+    <a href="/" {% if pagina == "jogar" %}aria-current="page"{% endif %}>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M7 4 L20 12 L7 20 Z"/></svg>Jogar</a>
+    <a href="/ranking" {% if pagina == "ranking" %}aria-current="page"{% endif %}>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 20V10 M12 20V4 M19 20v-7"/></svg>Ranking</a>
+    <a href="/loja" {% if pagina == "loja" %}aria-current="page"{% endif %}>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M5 8h14l-1 12H6z M9 8V6a3 3 0 0 1 6 0v2"/></svg>Loja</a>
+    <a href="/perfil" {% if pagina == "perfil" %}aria-current="page"{% endif %}>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8z M4 21c1-4 4-6 8-6s7 2 8 6"/></svg>Perfil</a>
+  </nav>
+</body>
+</html>

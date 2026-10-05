@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% from "_macros.html" import raio, arte %}
+{% block titulo %}Loja · CircuitCrash{% endblock %}
+{% block conteudo %}
+<div class="loja">
+  <section>
+    <h1>Loja de avatares</h1>
+    <p class="suave" style="margin: 6px 0 0">Troque Fagulhas por avatares. São só visuais e ficam com você para sempre.</p>
+    <nav class="filtros" aria-label="Filtrar por raridade">
+      {% for valor, rotulo in filtros %}
+      <a href="/loja{% if valor != 'todos' %}?raridade={{ valor }}{% endif %}" {% if filtro == valor %}aria-current="true"{% endif %}>{{ rotulo }}</a>
+      {% endfor %}
+    </nav>
+    <div class="vitrine">
+      {% for c in cartoes %}{% set a = c.avatar %}
+      <article class="cartao-avatar {% if c.estado == 'em_uso' %}em-uso{% endif %}">
+        <div class="vitrine-arte" style="background: {{ a.fundo }}">{{ arte(a, 64) }}</div>
+        <div class="titulo"><strong>{{ a.nome }}</strong><span class="raridade-{{ a.raridade.value }}">{{ a.raridade.rotulo }}</span></div>
+        {% if c.estado == "em_uso" %}
+          <div class="estado-cartao" style="justify-content: center; border-radius: 10px; background: var(--ambar-escuro); color: var(--ambar); font-weight: 600">Em uso</div>
+        {% elif c.estado == "possui" %}
+          <form method="post" action="/loja/usar"><input type="hidden" name="avatar_id" value="{{ a.id }}">
+            <button class="botao pequeno" type="submit">Usar</button></form>
+        {% elif c.estado == "comprar" %}
+          <form method="post" action="/loja/comprar"><input type="hidden" name="avatar_id" value="{{ a.id }}">
+            <button class="botao primario pequeno" type="submit">Trocar por {{ a.preco }}</button></form>
+        {% elif c.estado == "exclusivo" %}
+          <div class="estado-cartao" style="color: #FCD34D; font-size: 13px">Prêmio do campeão de campeonato</div>
+        {% else %}
+          <div class="estado-cartao"><span class="mono" style="display: flex; align-items: center; gap: 6px">{{ raio(14) }}{{ "{:,}".format(a.preco).replace(",", ".") }}</span><span class="suave">faltam {{ c.falta }}</span></div>
+        {% endif %}
+      </article>
+      {% else %}
+      <p class="suave">Nenhum avatar nessa raridade.</p>
+      {% endfor %}
+    </div>
+  </section>
+
+  <aside class="pilha">
+    <div class="painel pilha" style="gap: 12px">
+      <h2 class="rotulo" style="margin: 0">Sua carteira</h2>
+      <span class="mono" style="display: flex; align-items: center; gap: 8px; font-size: 30px">{{ raio(24) }}{{ eu.fagulhas }}</span>
+      <span class="suave" style="font-size: 14px">Fagulhas são a moeda do jogo. Não confunda com os pontos da partida nem com o rating.</span>
+    </div>
+    <div class="painel">
+      <h2 class="rotulo">Como ganhar Fagulhas</h2>
+      <div class="tabela-ganhos">
+        {% for colocacao, valor in recompensas.items() %}
+        <div><span>{{ colocacao }}º lugar</span><span class="mono" style="color: var(--ambar)">+{{ valor }}</span></div>
+        {% endfor %}
+        <div><span>Primeira vitória do dia</span><span class="mono" style="color: var(--ambar)">+20</span></div>
+        <div><span>Missões diárias</span><span class="mono" style="color: var(--ambar)">+20 a +50</span></div>
+        <p class="suave" style="margin: 6px 0 0; font-size: 13px">Partidas casuais valem metade. Limite de {{ limite_diario }} por dia. Abandonar a partida não rende nada.</p>
+      </div>
+    </div>
+  </aside>
+</div>
+{% endblock %}

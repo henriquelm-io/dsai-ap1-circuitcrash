@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% from "_macros.html" import raio, avatar %}
+{% block titulo %}Perfil · CircuitCrash{% endblock %}
+{% block conteudo %}
+<div class="perfil">
+  <section class="pilha">
+    <div class="painel identidade">
+      {{ avatar(meu_avatar, eu, 120) }}
+      <div>
+        <h1 style="font-size: 28px">{{ eu.apelido }}</h1>
+        <p class="suave" style="margin: 4px 0 0; font-size: 14px">
+          {% if meu_avatar %}Avatar: {{ meu_avatar.nome }}{% else %}Sem avatar ainda{% endif %}
+          · Membro desde {{ eu.membro_desde.strftime("%d/%m/%Y") }}
+        </p>
+      </div>
+      <a class="botao contorno pequeno" href="/loja">{{ "Trocar avatar" if meu_avatar else "Conseguir um avatar" }}</a>
+      <form method="post" action="/jogador">
+        {% for j in jogadores_demo if j.id != eu.id %}
+        <input type="hidden" name="jogador_id" value="{{ j.id }}">
+        <button class="botao fantasma pequeno" type="submit">Demo: ver como {{ j.apelido }}{% if j.provisorio %} (usuário novo){% endif %}</button>
+        {% endfor %}
+      </form>
+    </div>
+
+    <div class="numeros">
+      <div class="numero"><span>Partidas</span><span class="mono">{{ eu.partidas }}</span></div>
+      <div class="numero"><span>Vitórias</span><span class="mono">{{ eu.vitorias }}</span></div>
+      <div class="numero"><span>Taxa de vitória</span><span class="mono">{{ eu.taxa_vitoria }}%</span></div>
+      <div class="numero"><span>Objetivos capturados</span><span class="mono">{{ eu.objetivos_capturados }}</span></div>
+    </div>
+
+    <div class="painel pilha" style="gap: 10px; {% if not meu_avatar %}border-color: var(--ambar){% endif %}">
+      <div style="display: flex; align-items: center; justify-content: space-between">
+        <span class="suave">{{ "Seu primeiro avatar" if not meu_avatar else "Fagulhas" }}</span>
+        <span class="mono" style="display: flex; align-items: center; gap: 6px; font-size: 20px">{{ raio(16) }}{{ eu.fagulhas }}</span>
+      </div>
+      {% if proximo %}
+      <div class="barra" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ proximo.pct }}" aria-label="Progresso até o próximo avatar"><div style="width: {{ proximo.pct }}%"></div></div>
+      <span style="font-size: 14px">Faltam <strong>{{ proximo.falta }}</strong> para o avatar <strong>{{ proximo.avatar.nome }}</strong> ({{ proximo.avatar.raridade.rotulo | lower }}). <a href="/loja">Ver loja</a></span>
+      {% else %}
+      <span style="font-size: 14px">Você já pode trocar Fagulhas por um avatar novo. <a href="/loja">Ir para a loja</a></span>
+      {% endif %}
+    </div>
+  </section>
+
+  <section class="pilha">
+    <div class="destaques">
+      <div class="numero painel">
+        <span>Rating {% if eu.provisorio %}provisório{% endif %}</span>
+        <span class="mono">{{ eu.rating }}</span>
+        {% if eu.provisorio %}<span class="suave" style="font-size: 13px">Jogue mais {{ 5 - eu.partidas }} partidas para entrar no ranking</span>{% endif %}
+      </div>
+      <div class="numero painel">
+        <span>Posição na temporada</span>
+        <span class="mono">{{ "#" ~ posicao if posicao else "—" }}</span>
+        <span class="suave" style="font-size: 13px">Top 100 ganha avatar exclusivo</span>
+      </div>
+      <div class="numero painel">
+        <span>Temporada 1</span>
+        <span style="font-family: var(--titulo); font-weight: 700; font-size: 24px">Em andamento</span>
+        <span class="suave" style="font-size: 13px">O ranking reinicia a cada temporada</span>
+      </div>
+    </div>
+
+    <div class="painel">
+      <h2 class="rotulo">Partidas recentes</h2>
+      {% if partidas %}
+      <table class="tabela">
+        <thead><tr><th scope="col">Colocação</th><th scope="col">Pontos</th><th scope="col">Rating</th><th scope="col">Fagulhas</th><th scope="col">Quando</th></tr></thead>
+        <tbody>
+          {% for p in partidas %}
+          <tr>
+            <td class="mono" {% if p.colocacao == 1 %}style="color: var(--ambar)"{% endif %}>{{ p.colocacao }}º</td>
+            <td>{{ p.pontos }}</td>
+            <td class="{{ 'sobe' if p.variacao_rating > 0 else 'desce' if p.variacao_rating < 0 else 'suave' }}">{{ "%+d" % p.variacao_rating if p.variacao_rating else "provisório" }}</td>
+            <td>+{{ p.fagulhas }}</td>
+            <td class="suave">{{ p.quando }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}<p class="suave" style="margin: 0">Nenhuma partida ainda.</p>{% endif %}
+    </div>
+
+    <div class="grade-2" style="gap: 16px">
+      <div class="painel">
+        <h2 class="rotulo">Conquistas · {{ conquistas | selectattr("concluida") | list | length }} de {{ conquistas | length }}</h2>
+        <div class="conquistas">
+          {% for c in conquistas %}
+          <div>
+            <div class="medalha {% if not c.concluida %}pendente{% endif %}">
+              {% if c.concluida %}{{ raio(22, "#F5A524", false) }}{% else %}{{ c.progresso }}/{{ c.meta }}{% endif %}
+            </div>
+            <span>{{ c.nome }}</span>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="painel">
+        <h2 class="rotulo">Meus avatares · {{ possuidos | length }}</h2>
+        {% if possuidos %}
+        <div class="inventario">
+          {% for a in possuidos %}
+          <form method="post" action="/loja/usar">
+            <input type="hidden" name="avatar_id" value="{{ a.id }}"><input type="hidden" name="voltar" value="/perfil">
+            <button type="submit" aria-label="Usar {{ a.nome }}">{{ avatar(a, eu, 64) }}<span class="{{ 'em-uso' if a.id == eu.avatar_id else '' }}">{{ "Em uso" if a.id == eu.avatar_id else a.nome }}</span></button>
+          </form>
+          {% endfor %}
+        </div>
+        {% else %}
+        <p class="suave" style="margin: 0 0 12px">Usuários novos começam sem avatar. Junte {{ preco_comum }} Fagulhas para o primeiro.</p>
+        {% endif %}
+        <h2 class="rotulo" style="margin-top: 18px">Missões de hoje</h2>
+        <ul class="lista-simples">
+          {% for m in missoes %}
+          <li class="linha-missao"><span>{{ m.titulo }} <span class="suave">· {{ m.progresso }}/{{ m.meta }}</span></span><span class="mono" style="color: var(--ambar)">+{{ m.recompensa }}</span></li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock %}

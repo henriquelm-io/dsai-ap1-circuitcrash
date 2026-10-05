@@ -1,0 +1,120 @@
+{% from "_macros.html" import icone_objetivo %}
+<div id="jogo" class="jogo" hx-target="#jogo" hx-swap="outerHTML">
+
+  <section class="coluna-esquerda pilha" aria-label="Placar">
+    <h2 class="rotulo">Jogadores</h2>
+    <div class="placar">
+      {% for item in jogadores %}
+      <div class="cartao-jogador {% if loop.first %}atual{% endif %}">
+        <span class="selo" style="background: {{ item.j.cor }}">{{ item.j.inicial }}</span>
+        <span class="nome">
+          <strong>{{ item.j.nome }}</strong>
+          <small>{{ "Energizado" if item.energizado else "Sem energia" }}</small>
+        </span>
+        <span class="mono" aria-label="{{ item.pontos }} pontos">{{ item.pontos }}</span>
+      </div>
+      {% endfor %}
+    </div>
+    <div class="painel legenda-painel">
+      <h2 class="rotulo">Objetivos</h2>
+      <div class="legenda">
+        {% for chave, obj in objetivos.items() %}
+        <div>{{ icone_objetivo(chave, 20) }}<span>{{ obj.nome }}</span><span class="mono">+{{ obj.pontos }}</span></div>
+        {% endfor %}
+        <p class="suave" style="margin: 4px 0 0; font-size: 13px">Só pontua quem leva energia da fonte central até o objetivo. A cor da borda mostra quem capturou.</p>
+      </div>
+    </div>
+  </section>
+
+  <section aria-label="Tabuleiro">
+    <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px">
+      <span class="chip">Rodada {{ estado.rodada if estado.rodada <= max_rodadas else max_rodadas }} de {{ max_rodadas }}</span>
+      <span class="chip vez">{{ "Partida encerrada" if estado.terminou else "Sua vez" }}</span>
+    </div>
+    <div class="status {% if estado.erro %}erro{% endif %}" role="status" aria-live="polite">
+      <span class="ponto" aria-hidden="true"></span>
+      <span>{{ estado.mensagem }}</span>
+    </div>
+
+    {% if estado.terminou %}
+    <div class="painel resultado">
+      <h2>Fim de partida</h2>
+      <ol>
+        {% for colocacao, j, pontos in classificacao %}
+        <li>
+          <span class="mono">{{ colocacao }}º</span>
+          <span><span class="selo" style="display: inline-flex; width: 28px; height: 28px; font-size: 14px; background: {{ j.cor }}; vertical-align: middle; margin-right: 8px">{{ j.inicial }}</span>{{ j.nome }}</span>
+          <span class="mono">{{ pontos }} pts</span>
+          <span class="suave" style="font-size: 13px">+{{ recompensas[colocacao] }} Fagulhas</span>
+        </li>
+        {% endfor %}
+      </ol>
+      <form method="post" action="/partida/nova" hx-post="/partida/nova">
+        <button class="botao primario" type="submit">Jogar de novo</button>
+      </form>
+    </div>
+    {% else %}
+    <div class="tabuleiro" role="grid" aria-label="Tabuleiro 7 por 7">
+      {% for c in casas %}
+      {% set interativa = c.tipo in ("vazia", "peca") %}
+      {% if interativa %}<form method="post" action="/partida/jogar" hx-post="/partida/jogar">
+        <input type="hidden" name="linha" value="{{ c.linha }}"><input type="hidden" name="coluna" value="{{ c.coluna }}">
+        <button class="casa" type="submit" aria-label="{{ c.rotulo }}">
+      {% else %}<div class="casa" role="img" aria-label="{{ c.rotulo }}">{% endif %}
+          <svg viewBox="0 0 100 100" aria-hidden="true">
+            <rect class="fundo-casa" x="2" y="2" width="96" height="96" rx="13" fill="#141B2D" stroke="#222C44" stroke-width="2"/>
+            {% if c.caminho %}<path d="{{ c.caminho }}" stroke="{{ c.cor }}" stroke-opacity="{{ c.opacidade }}" stroke-width="13" fill="none" stroke-linecap="round"/>{% endif %}
+            {% if c.no_central %}<circle cx="50" cy="50" r="9" fill="{{ c.cor }}" fill-opacity="{{ c.opacidade }}"/>{% endif %}
+          </svg>
+          {% if c.tipo == "fonte" %}
+          <span class="marcador fonte"><svg width="55%" height="55%" viewBox="0 0 24 24" fill="#0B1020" aria-hidden="true"><path d="M13 2 L4 14 H11 L10 22 L20 9 H13 Z"/></svg></span>
+          {% elif c.tipo == "base" %}
+          <span class="marcador base" style="background: {{ c.cor }}">{{ c.inicial }}</span>
+          {% elif c.tipo == "objetivo" %}
+          <span class="marcador objetivo" style="border-color: {{ c.cor_captura }}">{{ icone_objetivo(c.objetivo, 20) }}<span>{{ c.pontos }}</span></span>
+          {% elif c.tipo == "bloqueio" %}
+          <span class="marcador bloqueio"><svg width="45%" height="45%" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M6 6 L18 18 M18 6 L6 18"/></svg></span>
+          {% endif %}
+      {% if interativa %}</button></form>{% else %}</div>{% endif %}
+      {% endfor %}
+    </div>
+    {% endif %}
+  </section>
+
+  <section class="pilha" aria-label="Suas ações">
+    <div>
+      <h2 class="rotulo">Sua mão</h2>
+      <div class="mao">
+        {% for p in mao %}
+        <form method="post" action="/partida/selecionar" hx-post="/partida/selecionar">
+          <input type="hidden" name="indice" value="{{ p.indice }}">
+          <button class="peca" type="submit" aria-pressed="{{ 'true' if p.selecionada else 'false' }}" aria-label="{{ p.nome }}{% if p.selecionada %}, selecionada{% endif %}">
+            <svg viewBox="0 0 100 100" aria-hidden="true"><path d="{{ p.caminho }}" stroke="#F5A524" stroke-opacity="{{ 1 if p.selecionada else 0.7 }}" stroke-width="12" fill="none" stroke-linecap="round"/></svg>
+          </button>
+        </form>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="botoes-jogo">
+      <form method="post" action="/partida/girar-mao" hx-post="/partida/girar-mao">
+        <button class="botao contorno" type="submit" {% if estado.terminou %}disabled{% endif %}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7M21 4v5h-5"/></svg>
+          Girar peça
+        </button>
+      </form>
+      <form method="post" action="/partida/passar" hx-post="/partida/passar">
+        <button class="botao" type="submit" {% if estado.terminou %}disabled{% endif %}>Passar a vez</button>
+      </form>
+    </div>
+    <p class="suave" style="margin: 0; font-size: 14px">Toque numa casa vazia para colocar a peça selecionada. Toque numa peça do tabuleiro para girá-la, inclusive dos adversários.</p>
+    <div class="painel historico-painel">
+      <h2 class="rotulo">Últimas jogadas</h2>
+      <ul class="historico">
+        {% for linha in estado.historico %}<li>{{ linha }}</li>{% endfor %}
+      </ul>
+    </div>
+    <form method="post" action="/partida/nova" hx-post="/partida/nova">
+      <button class="botao fantasma pequeno" type="submit">Recomeçar demonstração</button>
+    </form>
+  </section>
+</div>

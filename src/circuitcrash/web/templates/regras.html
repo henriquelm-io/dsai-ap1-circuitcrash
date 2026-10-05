@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block titulo %}Regras · CircuitCrash{% endblock %}
+{% block conteudo %}
+<article class="regras">
+  <h1>Como jogar</h1>
+  <p class="suave" style="margin-top: 8px">Ligue sua base à fonte de energia central e leve energia até os objetivos. Ganha quem tiver mais pontos no fim da partida.</p>
+
+  <section>
+    <h2>Preparação</h2>
+    <ul>
+      <li>Tabuleiro 7×7, com a fonte de energia no centro e uma base em cada canto, uma por jogador.</li>
+      <li>Objetivos espalhados pelo mapa: {% for o in objetivos.values() %}<strong>{{ o.nome }} (+{{ o.pontos }})</strong>{{ ", " if not loop.last else "." }}{% endfor %}</li>
+      <li>Cada jogador começa com 5 peças na mão e 1 carta de cada especial.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>O turno</h2>
+    <p>Você tem 30 segundos e faz <strong>uma</strong> ação:</p>
+    <ol>
+      <li><strong>Colocar</strong> uma peça da mão numa casa vazia, ligada ao seu circuito. Dá para girar a peça antes.</li>
+      <li><strong>Girar</strong> qualquer peça do tabuleiro, sua ou de outro jogador, 90°.</li>
+      <li><strong>Usar uma carta especial</strong>: Isolante (bloqueia uma casa vazia), Ponte (passa por cima de outro circuito) ou Curto (remove uma peça adversária que não encosta numa base).</li>
+      <li><strong>Passar a vez.</strong></li>
+    </ol>
+    <p>A mesma peça não pode ser girada duas rodadas seguidas.</p>
+  </section>
+
+  <section>
+    <h2>Energia e pontos</h2>
+    <ul>
+      <li>Seu circuito fica <strong>energizado</strong> quando há um caminho contínuo de peças suas entre a sua base e a fonte.</li>
+      <li>A energia só passa pelas suas próprias peças.</li>
+      <li>Circuito energizado que chega a um objetivo o <strong>captura</strong> e ganha os pontos na hora. Se o circuito for cortado, o objetivo volta a ficar neutro, mas os pontos ficam com você.</li>
+      <li>No fim: +3 pontos se o seu circuito estiver energizado.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Fim de partida</h2>
+    <p>Depois de 12 rodadas. Desempate: mais objetivos capturados e, depois, mais peças energizadas.</p>
+  </section>
+
+  <section>
+    <h2>Fagulhas e avatares</h2>
+    <ul>
+      <li>Fagulhas por colocação na partida ranqueada: {% for c, v in recompensas.items() %}{{ c }}º +{{ v }}{{ ", " if not loop.last else "." }}{% endfor %} Casuais valem metade. Limite de {{ limite_diario }} por dia.</li>
+      <li>Usuários novos começam sem avatar. Preços: {% for r, p in precos.items() %}{{ r.rotulo }} {{ p }}{{ ", " if not loop.last else "." }}{% endfor %}</li>
+      <li>Avatares exclusivos não são vendidos: vão para campeões de campeonato e para o top 100 da temporada.</li>
+    </ul>
+  </section>
+</article>
+{% endblock %}

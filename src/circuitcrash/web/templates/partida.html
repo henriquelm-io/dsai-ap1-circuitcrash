@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block titulo %}Partida · CircuitCrash{% endblock %}
+{% block conteudo %}
+<div class="cabecalho-partida">
+  <div>
+    <h1>Partida de demonstração</h1>
+    <p class="suave" style="margin: 4px 0 0">Os adversários estão parados nesta versão: só você joga.</p>
+  </div>
+</div>
+{% include "_jogo.html" %}
+{% endblock %}

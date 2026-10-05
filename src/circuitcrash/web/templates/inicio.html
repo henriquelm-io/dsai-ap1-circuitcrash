@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% from "_macros.html" import raio, avatar %}
+{% block conteudo %}
+<div class="inicio">
+  <section class="painel heroi">
+    <p class="rotulo" style="margin: 0">Olá, {{ eu.apelido }}</p>
+    <h1>Ligue. Corte.<br>Domine o tabuleiro.</h1>
+    <p>Puzzle de circuitos para 4 jogadores, por turnos. Leve energia da fonte central até os objetivos antes dos adversários.</p>
+    <div class="acoes">
+      <a class="botao primario" href="/partida">Jogar partida rápida</a>
+      <button class="botao" type="button" disabled title="Disponível quando o multiplayer estiver pronto">Partida privada (em breve)</button>
+      <a class="botao fantasma" href="/regras">Como jogar</a>
+    </div>
+    {% if not meu_avatar %}
+    <div class="painel" style="background: var(--painel-2); border-color: var(--ambar)">
+      <strong>Você ainda não tem avatar.</strong>
+      <span class="suave">Jogue partidas para juntar Fagulhas e troque na <a href="/loja">loja</a>. O primeiro avatar comum custa 150.</span>
+    </div>
+    {% endif %}
+  </section>
+
+  <aside class="pilha">
+    <section class="painel">
+      <h2 class="rotulo">Missões de hoje</h2>
+      <ul class="lista-simples">
+        {% for m in missoes %}
+        <li class="linha-missao">
+          <span>{{ m.titulo }} <span class="suave">· {{ m.progresso }}/{{ m.meta }}</span></span>
+          <span class="mono" style="color: var(--ambar)">+{{ m.recompensa }}</span>
+        </li>
+        {% endfor %}
+      </ul>
+    </section>
+    <section class="painel">
+      <h2 class="rotulo">Top 5 da temporada</h2>
+      <ol class="lista-simples" style="gap: 0">
+        {% for j in ranking %}
+        {% set av = (avatares | selectattr("id", "equalto", j.avatar_id) | first) if j.avatar_id else none %}
+        <li class="linha-ranking">
+          <span class="posicao">#{{ loop.index }}</span>
+          {{ avatar(av, j, 32) }}
+          <span style="flex-grow: 1">{{ j.apelido }}</span>
+          <span class="mono">{{ j.rating }}</span>
+        </li>
+        {% endfor %}
+      </ol>
+      <a href="/ranking" style="display: inline-block; margin-top: 10px; font-size: 14px">Ver ranking completo</a>
+    </section>
+  </aside>
+</div>
+{% endblock %}

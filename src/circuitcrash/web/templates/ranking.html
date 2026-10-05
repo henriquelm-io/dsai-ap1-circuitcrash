@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% from "_macros.html" import avatar %}
+{% block titulo %}Ranking · CircuitCrash{% endblock %}
+{% block conteudo %}
+<div style="max-width: 820px">
+  <h1>Ranking da temporada 1</h1>
+  <p class="suave" style="margin: 6px 0 20px">O rating sobe ou desce conforme a sua colocação em cada partida ranqueada. Quem tem menos de 5 partidas ainda está no período provisório e não aparece aqui.</p>
+  <div class="painel">
+    <table class="tabela">
+      <thead><tr><th scope="col">#</th><th scope="col">Jogador</th><th scope="col">Rating</th><th scope="col">Partidas</th><th scope="col">Vitórias</th></tr></thead>
+      <tbody>
+        {% for j in jogadores %}
+        <tr {% if j.id == eu.id %}style="background: var(--ambar-escuro)"{% endif %}>
+          <td class="mono">{{ loop.index }}</td>
+          <td><span style="display: inline-flex; align-items: center; gap: 10px">{{ avatar(avatares.get(j.avatar_id), j, 32) }}{{ j.apelido }}{% if j.id == eu.id %} <span class="suave">(você)</span>{% endif %}</span></td>
+          <td class="mono">{{ j.rating }}</td>
+          <td>{{ j.partidas }}</td>
+          <td>{{ j.vitorias }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
