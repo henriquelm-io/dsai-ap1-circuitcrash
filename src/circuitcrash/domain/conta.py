@@ -6,11 +6,16 @@ atual chegam como parâmetros. A conversa com o Google fica em circuitcrash.logi
 
 from __future__ import annotations
 
+import hashlib
 import re
 import unicodedata
 from collections.abc import Mapping
 from dataclasses import dataclass
+from datetime import date
 from typing import Any
+
+from circuitcrash.dados.repositorio import Repositorio
+from circuitcrash.domain.modelos import Jogador
 
 EMISSORES_GOOGLE = ("accounts.google.com", "https://accounts.google.com")
 TAMANHO_APELIDO = 20
@@ -78,3 +83,31 @@ def sugerir_apelido(nome: str, email: str, ocupados: set[str]) -> str:
         if candidato not in ocupados_min:
             return candidato
         numero += 1
+
+
+def id_do_jogador(sub: str) -> str:
+    """Id do jogador criado pelo Google; o sub não aparece em URLs nem formulários."""
+    return "g-" + hashlib.sha256(sub.encode()).hexdigest()[:12]
+
+
+def entrar_com_google(repo: Repositorio, identidade: Identidade, hoje: date) -> Jogador:
+    """Acha o jogador da conta Google, liga pelo e-mail ou cria um novo."""
+    jogador = repo.obter_jogador_por_google(identidade.sub)
+    if jogador is not None:
+        return jogador
+
+    jogador = repo.obter_jogador_por_email(identidade.email)
+    if jogador is not None:
+        if not repo.vincular_google(jogador.id, identidade.sub):
+            raise ErroLogin("Este e-mail já está ligado a outra conta Google.")
+        return jogador
+
+    ocupados = {j.apelido for j in repo.listar_jogadores()}
+    novo = Jogador(
+        id_do_jogador(identidade.sub),
+        sugerir_apelido(identidade.nome, identidade.email, ocupados),
+        identidade.email,
+        hoje,
+    )
+    repo.criar_jogador_google(novo, identidade.sub)
+    return novo

@@ -7,10 +7,10 @@
 - [x] T002 [H1] [H2] `domain/conta.py`: `ErroLogin`, `Identidade`, `conferir_identidade` e `sugerir_apelido`; T001 passa
 
 ## Fase 2 — Repositório (H1)
-- [ ] T003 [H1] `tests/test_login_repositorio.py` com a fixture `repo`: achar pelo `sub` e pelo e-mail, criar ligado, `vincular_google` uma vez só, `entrar_com_google` nos três caminhos e com e-mail ligado a outra conta; só banco: `sub` repetido recusado
-- [ ] T004 [H1] `dados/repositorio.py`: os quatro métodos no `Protocol`
-- [ ] T005 [H1] `dados/memoria.py` e `dados/sql.py`: os quatro métodos
-- [ ] T006 [H1] `domain/conta.py`: `entrar_com_google`; T003 passa
+- [x] T003 [H1] `tests/test_login_repositorio.py` com a fixture `repo`: achar pelo `sub` e pelo e-mail, criar ligado, `vincular_google` uma vez só, `entrar_com_google` nos três caminhos e com e-mail ligado a outra conta; só banco: `sub` repetido recusado
+- [x] T004 [H1] `dados/repositorio.py`: os quatro métodos no `Protocol`
+- [x] T005 [H1] `dados/memoria.py` e `dados/sql.py`: os quatro métodos
+- [x] T006 [H1] `domain/conta.py`: `entrar_com_google`; T003 passa
 
 ## Fase 3 — Rotas e tela (H1, H2, H3)
 - [ ] T007 [H1] [H2] [H3] `tests/test_login.py` com o Google falso: sem configuração, `/entrar`, retorno, segunda entrada, `state` errado, cancelamento, retorno repetido, `nonce` errado, **Sair**, **Demo como** restrito, `ler_id_token`
