@@ -1,6 +1,6 @@
 # Spec 006 — Partidas gravadas, Fagulhas e rating
 
-**Branch:** `006-partidas-gravadas` · **Status:** proposta, sem código ainda · **Criada em:** 05/10/2026 · **Dono:** Severino (banco de dados) · **Origem:** [SPEC/2026-10-05-partidas-gravadas.md](../../SPEC/2026-10-05-partidas-gravadas.md)
+**Branch:** `006-partidas-gravadas` · **Status:** implementada, aguardando revisão no PR · **Criada em:** 05/10/2026 · **Dono:** Severino (banco de dados) · **Origem:** [SPEC/2026-10-05-partidas-gravadas.md](../../SPEC/2026-10-05-partidas-gravadas.md)
 
 ## Contexto
 A partida da tela `/partida` termina depois de 12 rodadas e mostra a classificação com "+40 Fagulhas", mas nada é gravado: o jogador não recebe as Fagulhas, o rating não muda e o perfil continua com as partidas de exemplo. A spec 002 deixou isso de fora de propósito ("gravar as partidas jogadas na tela `/partida`" e "aplicar Fagulhas e rating ao fim da partida"), e o próprio plano dela apontou esta spec como a próxima.

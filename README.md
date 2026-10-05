@@ -99,6 +99,7 @@ uv run mypy
 - Na partida, toque numa casa vazia ao lado do seu circuito para colocar a peça selecionada, ou numa peça do tabuleiro para girá-la. Dica: a curva da mão colocada à direita da sua peça em T liga você à fonte e captura a bateria.
 - Com o banco, compras e trocas de avatar continuam depois de reiniciar o servidor. Para voltar ao estado inicial, rode a carga com `--recriar`. Sem banco (`DATABASE_URL` vazio), reiniciar volta tudo ao início.
 - As missões do dia são carregadas para a data da carga: rode `--recriar` no dia da apresentação.
+- No fim da partida (12 rodadas), o resultado fica gravado: o jogador ganha Fagulhas pela colocação (1º +40, 2º +25, 3º +15, 4º +10, até 400 por dia), o rating muda pelo Elo, e a partida aparece no topo do perfil. Para chegar rápido ao fim, passe a vez 7 vezes: "Você" fica em 3º (+15 Fagulhas). Spec em `specs/006-partidas-gravadas/`.
 
 ## Fluxo de trabalho
 Cada funcionalidade nasce como `spec.md` → `plan.md` → `tasks.md` em `specs/NNN-nome/`, numa branch com o mesmo nome, e entra na `main` por Pull Request revisado pelo outro membro da dupla. A partir de 05/10, cada funcionalidade também tem uma spec datada em `SPEC/AAAA-MM-DD-nome.md`, commitada antes do código. Detalhes em `AGENTS.md`.

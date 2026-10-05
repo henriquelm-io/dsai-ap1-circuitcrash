@@ -20,9 +20,9 @@
 - [x] T011 [H4] `web/templates/_jogo.html`: quadro "Seu resultado" com Fagulhas, aviso de limite e rating antes → depois
 
 ## Fase 4 — Acabamento
-- [ ] T012 [P] `README.md` (demonstração), `docs/banco-de-dados.md` e `SPEC/2026-10-05-partidas-gravadas.md` com o status
-- [ ] T013 Conferir à mão com o banco: jogar até o fim como `voltz_br` e `luma_dev`, ver cabeçalho, perfil e ranking; reiniciar o servidor e conferir de novo; tela a 390 px
-- [ ] T014 `pytest`, `ruff check`, `ruff format --check` e `mypy` sem erros
+- [x] T012 [P] `README.md` (demonstração), `docs/banco-de-dados.md` e `SPEC/2026-10-05-partidas-gravadas.md` com o status
+- [x] T013 Conferir à mão com o banco: jogar até o fim como `voltz_br` e `luma_dev`, ver cabeçalho, perfil e ranking; reiniciar o servidor e conferir de novo; tela a 390 px — feito em 05/10 com um SQLite temporário, pelo HTTP: `voltz_br` em 3º, +15 Fagulhas (320 → 335), rating 1482 → 1466, `HX-Refresh` no fim e tudo igual depois de reiniciar. A largura de 390 px e o `luma_dev` ficam para a revisão no navegador (o `luma_dev` está coberto por `test_partida_do_novato_usa_k_provisorio`)
+- [x] T014 `pytest`, `ruff check`, `ruff format --check` e `mypy` sem erros
 
 ## Dependências
 Fase 1 → Fase 2 → Fase 3 → Fase 4. Em cada fase, os testes vêm antes da implementação. T007 depende de T005; T010 depende de T003 e T005.

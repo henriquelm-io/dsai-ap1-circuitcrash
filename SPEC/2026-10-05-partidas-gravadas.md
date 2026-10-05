@@ -1,6 +1,6 @@
 # Partidas gravadas, Fagulhas e rating
 
-**Data:** 05/10/2026 · **Status:** proposta, sem código ainda · **Branch:** `006-partidas-gravadas` · **Detalhes:** `specs/006-partidas-gravadas/`
+**Data:** 05/10/2026 · **Status:** implementada, aguardando revisão no PR · **Branch:** `006-partidas-gravadas` · **Detalhes:** `specs/006-partidas-gravadas/`
 
 ## O quê
 Quando a partida da tela `/partida` termina, o resultado do jogador fica gravado: colocação, pontos, variação de rating e Fagulhas ganhas. Na mesma hora, o perfil do jogador recebe as Fagulhas (respeitando o limite diário), o rating novo e os contadores de partidas, vitórias e objetivos capturados. A tela de fim de partida mostra esse resultado, e a partida aparece no topo das partidas recentes do perfil.

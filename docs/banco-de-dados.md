@@ -12,6 +12,12 @@ O banco foi ligado na spec `002-banco-de-dados`. `RepositorioSQL` (`src/circuitc
 | `dados/carga.py` | `python -m circuitcrash.dados.carga [--recriar]`: migra e carrega os dados de `memoria.py` |
 | `migracoes/` + `alembic.ini` | Migrações Alembic; a URL vem do `.env` |
 
+### Partidas gravadas (spec 006)
+- `fagulhas_ganhas_hoje(jogador_id)`: soma de `participacoes.fagulhas` das partidas com `terminada_em` hoje. É o que o limite de 400 Fagulhas por dia usa.
+- `registrar_partida(jogador_id, resultado)`: numa transação, insere `partidas` e `participacoes` e soma Fagulhas, rating, partidas, vitórias e objetivos ao jogador com `UPDATE ... SET x = x + :valor`. Se qualquer passo falhar, nada fica gravado.
+- As contas de Fagulhas e rating ficam em `domain/economia.py`; o repositório só grava o resultado pronto.
+- As partidas de exemplo terminam às 00:30 (menos alguns minutos), para uma partida jogada no dia da carga aparecer antes delas.
+
 **Atenção:** como `RepositorioSQL` devolve objetos novos a cada chamada, mudar um `Jogador` não grava nada até chamar `salvar_jogador`.
 
 ### Criar uma migração nova
