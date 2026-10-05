@@ -4,7 +4,7 @@ Puzzle de circuitos por turnos para 4 jogadores, jogado no navegador do computad
 
 **Dupla:** Henrique Lima e Severino Sobrinho
 
-**Jogue online:** _URL pública: a preencher depois da publicação no Render (ver `SPEC/2026-10-05-publicacao.md`)_
+**Jogue online:** <https://circuitcrash.onrender.com/> (plano gratuito do Render: o primeiro acesso depois de um tempo parado pode levar alguns segundos)
 
 Esta versão traz a **interface web completa**: partida de demonstração jogável, perfil, loja de avatares, ranking e regras. Os dados ficam num **banco SQLite** (ou PostgreSQL), ou em memória se nenhum banco for configurado. O login vem na próxima spec.
 
@@ -58,6 +58,19 @@ Com o celular e o computador na mesma rede Wi-Fi:
 $env:HOST = "0.0.0.0"; uv run python -m circuitcrash
 ```
 Descubra o IP do computador com `ipconfig` e abra `http://<ip>:8000` no celular. Se o Windows perguntar sobre o firewall, permita em redes privadas.
+
+## Publicação (Render)
+O serviço é descrito no `render.yaml` (spec `specs/004-publicacao/`). Um push na `main` publica a versão nova sozinho. A cada início, a carga roda com `--recriar` antes do servidor subir, então a demonstração sempre começa com os dados de exemplo; trocas de avatar somem quando o serviço reinicia ou dorme.
+
+Para refazer a publicação do zero:
+1. Entre em <https://dashboard.render.com> com a conta do GitHub e dê acesso ao repositório `dsai-ap1-circuitcrash`.
+2. Clique em **New** → **Blueprint**, escolha o repositório e a branch `main`. O Render lê o `render.yaml` e mostra o Web Service `circuitcrash` (plano free).
+3. Confirme em **Deploy Blueprint**. Não é preciso digitar nenhuma variável: a `SECRET_KEY` é gerada pelo Render e as outras estão no `render.yaml`.
+4. Acompanhe o log do deploy até aparecer o servidor no ar (o build leva alguns minutos). Se o build falhar por causa do `PYTHON_VERSION`, troque no `render.yaml` por uma versão disponível a partir da 3.12.
+5. Abra a URL que o Render mostra no topo da página do serviço e confira `/health`, que deve responder `{"status":"ok"}`. Depois navegue por início, partida, perfil, loja, ranking e regras, no computador e no celular.
+6. Se a URL mudar, atualize o link **Jogue online** no começo deste README.
+
+Para voltar ao estado inicial antes de apresentar, reinicie o serviço pelo painel do Render (**Restart service**) ou faça um novo deploy.
 
 ## Qualidade
 ```powershell

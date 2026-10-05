@@ -9,6 +9,6 @@
 - [x] T004 [H3] Rodar `pytest`, `ruff check`, `ruff format --check` e `mypy`
 
 ## Fase 2 — Publicação (depois do merge na `main`)
-- [ ] T005 [H1] Criar o serviço no Render pelo Blueprint (`render.yaml`) e conferir no navegador do computador e do celular todas as telas por HTTPS
-- [ ] T006 [H2] Reiniciar o serviço e conferir que a troca de avatar some e o exemplo volta
-- [ ] T007 [P] [H3] `README.md`: URL pública e o passo a passo para refazer a publicação do zero
+- [x] T005 [H1] Criar o serviço no Render pelo Blueprint (`render.yaml`) e conferir no navegador do computador e do celular todas as telas por HTTPS
+- [x] T006 [H2] Reiniciar o serviço e conferir que a troca de avatar some e o exemplo volta
+- [x] T007 [P] [H3] `README.md`: URL pública e o passo a passo para refazer a publicação do zero
