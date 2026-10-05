@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from typing import Protocol
 
-from circuitcrash.domain.modelos import Avatar, Conquista, Jogador, Missao, ResumoPartida
+from circuitcrash.domain.modelos import Avatar, Conquista, Jogador, Missao, ResultadoPartida, ResumoPartida
 
 
 class Repositorio(Protocol):
@@ -41,3 +41,16 @@ class Repositorio(Protocol):
     def missoes_do_dia(self, jogador_id: str) -> list[Missao]: ...
 
     def conquistas(self, jogador_id: str) -> list[Conquista]: ...
+
+    # Partidas terminadas (spec 006)
+    def fagulhas_ganhas_hoje(self, jogador_id: str) -> int:
+        """Soma das Fagulhas ganhas em partidas que terminaram hoje (para o limite diário)."""
+        ...
+
+    def registrar_partida(self, jogador_id: str, resultado: ResultadoPartida) -> None:
+        """Grava a partida e aplica o resultado ao jogador, tudo ou nada.
+
+        Fagulhas, rating, partidas, vitórias e objetivos capturados são somados ao
+        valor guardado. Levanta ValueError se o jogador não existe.
+        """
+        ...

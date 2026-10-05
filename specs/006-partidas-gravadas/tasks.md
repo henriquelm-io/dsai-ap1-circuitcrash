@@ -8,11 +8,11 @@
 - [x] T003 [H2] [H3] `domain/economia.py`: constantes, `fagulhas_da_colocacao`, `aplicar_limite`, `esperado`, `variacao_elo` e `resultado_da_partida`; T001 passa
 
 ## Fase 2 — Gravação no repositório (H1)
-- [ ] T004 [H1] `tests/test_partidas_gravadas.py` com a fixture `repo`: Fagulhas de hoje do exemplo, registrar atualiza o jogador e as recentes, soma no limite, jogador inexistente não grava nada, novato entra no ranking; só banco: persiste num `RepositorioSQL` novo
-- [ ] T005 [H1] `dados/repositorio.py`: `fagulhas_ganhas_hoje` e `registrar_partida` no `Protocol`
-- [ ] T006 [H1] `dados/memoria.py`: partidas por instância e os dois métodos
-- [ ] T007 [H1] `dados/sql.py`: relógio `agora` injetável e os dois métodos, `registrar_partida` numa transação com `UPDATE` por incremento
-- [ ] T008 [H1] `dados/carga.py`: partidas de exemplo às 00:30 menos `i` minutos; testes de paridade continuam passando
+- [x] T004 [H1] `tests/test_partidas_gravadas.py` com a fixture `repo`: Fagulhas de hoje do exemplo, registrar atualiza o jogador e as recentes, soma no limite, jogador inexistente não grava nada, novato entra no ranking; só banco: persiste num `RepositorioSQL` novo
+- [x] T005 [H1] `dados/repositorio.py`: `fagulhas_ganhas_hoje` e `registrar_partida` no `Protocol`
+- [x] T006 [H1] `dados/memoria.py`: partidas por instância e os dois métodos
+- [x] T007 [H1] `dados/sql.py`: relógio `agora` injetável e os dois métodos, `registrar_partida` numa transação com `UPDATE` por incremento
+- [x] T008 [H1] `dados/carga.py`: partidas de exemplo às 00:30 menos `i` minutos; testes de paridade continuam passando
 
 ## Fase 3 — Fim de partida na tela (H1, H2, H4)
 - [ ] T009 [H1] [H4] `tests/test_paginas.py`: partida até o fim grava uma vez, `HX-Refresh` no fim via HTMX, perfil mostra a partida, "Jogar de novo" grava outra

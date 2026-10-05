@@ -15,6 +15,7 @@ from circuitcrash.domain.modelos import (
     Jogador,
     Missao,
     Raridade,
+    ResultadoPartida,
     ResumoPartida,
 )
 
@@ -195,6 +196,7 @@ class RepositorioMemoria:
         self._jogadores = {j.id: deepcopy(j) for j in JOGADORES}
         self._avatares = {a.id: a for a in AVATARES}
         self._inventarios = {k: set(v) for k, v in INVENTARIOS.items()}
+        self._partidas = {k: list(v) for k, v in PARTIDAS.items()}
 
     def obter_jogador(self, jogador_id: str) -> Jogador | None:
         return self._jogadores.get(jogador_id)
@@ -222,7 +224,7 @@ class RepositorioMemoria:
         self._inventarios.setdefault(jogador_id, set()).add(avatar_id)
 
     def partidas_recentes(self, jogador_id: str, limite: int = 5) -> list[ResumoPartida]:
-        return PARTIDAS.get(jogador_id, [])[:limite]
+        return self._partidas.get(jogador_id, [])[:limite]
 
     def missoes_do_dia(self, jogador_id: str) -> list[Missao]:
         return [
@@ -243,3 +245,20 @@ class RepositorioMemoria:
             Conquista("Invicto", min(vitorias, 1), 5),
             Conquista("Campeão", 0, 1),
         ]
+
+    def fagulhas_ganhas_hoje(self, jogador_id: str) -> int:
+        return sum(p.fagulhas for p in self._partidas.get(jogador_id, []) if p.quando == "hoje")
+
+    def registrar_partida(self, jogador_id: str, resultado: ResultadoPartida) -> None:
+        jogador = self._jogadores.get(jogador_id)
+        if jogador is None:
+            raise ValueError(f"Jogador não encontrado: {jogador_id}.")
+        resumo = ResumoPartida(
+            resultado.colocacao, resultado.pontos, resultado.variacao_rating, resultado.fagulhas, "hoje"
+        )
+        self._partidas.setdefault(jogador_id, []).insert(0, resumo)
+        jogador.fagulhas += resultado.fagulhas
+        jogador.rating += resultado.variacao_rating
+        jogador.partidas += 1
+        jogador.vitorias += int(resultado.vitoria)
+        jogador.objetivos_capturados += resultado.objetivos
