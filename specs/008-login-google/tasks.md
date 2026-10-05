@@ -3,8 +3,8 @@
 **Entrada:** [spec.md](spec.md), [plan.md](plan.md). `[P]` = pode ser feita em paralelo. `[H#]` = história atendida.
 
 ## Fase 1 — Regras puras (H1, H2)
-- [ ] T001 [H1] [H2] `tests/test_conta.py`: `conferir_identidade` (boa, emissor, destinatário, validade, `nonce`, e-mail não confirmado, sem `sub`) e `sugerir_apelido` (acentos, símbolos, 20 caracteres, sem nome, repetidos)
-- [ ] T002 [H1] [H2] `domain/conta.py`: `ErroLogin`, `Identidade`, `conferir_identidade` e `sugerir_apelido`; T001 passa
+- [x] T001 [H1] [H2] `tests/test_conta.py`: `conferir_identidade` (boa, emissor, destinatário, validade, `nonce`, e-mail não confirmado, sem `sub`) e `sugerir_apelido` (acentos, símbolos, 20 caracteres, sem nome, repetidos)
+- [x] T002 [H1] [H2] `domain/conta.py`: `ErroLogin`, `Identidade`, `conferir_identidade` e `sugerir_apelido`; T001 passa
 
 ## Fase 2 — Repositório (H1)
 - [ ] T003 [H1] `tests/test_login_repositorio.py` com a fixture `repo`: achar pelo `sub` e pelo e-mail, criar ligado, `vincular_google` uma vez só, `entrar_com_google` nos três caminhos e com e-mail ligado a outra conta; só banco: `sub` repetido recusado
