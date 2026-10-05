@@ -253,3 +253,36 @@ class RepositorioSQL:
                     objetivos_capturados=TabelaJogador.objetivos_capturados + resultado.objetivos,
                 )
             )
+
+    # Conta Google (spec 008)
+
+    def obter_jogador_por_google(self, google_sub: str) -> Jogador | None:
+        with self._sessao() as s:
+            linha = s.scalar(select(TabelaJogador).where(TabelaJogador.google_sub == google_sub))
+            return _jogador(linha) if linha else None
+
+    def obter_jogador_por_email(self, email: str) -> Jogador | None:
+        consulta = select(TabelaJogador).where(func.lower(TabelaJogador.email) == email.strip().lower())
+        with self._sessao() as s:
+            linha = s.scalar(consulta)
+            return _jogador(linha) if linha else None
+
+    def criar_jogador_google(self, jogador: Jogador, google_sub: str) -> None:
+        with self._sessao.begin() as s:
+            ultima = s.scalar(select(func.max(TabelaJogador.ordem))) or 0
+            linha = TabelaJogador(id=jogador.id, ordem=ultima + 1, google_sub=google_sub)
+            for campo in CAMPOS_JOGADOR:
+                setattr(linha, campo, getattr(jogador, campo))
+            s.add(linha)
+
+    def vincular_google(self, jogador_id: str, google_sub: str) -> bool:
+        with self._sessao.begin() as s:
+            linha = s.get(TabelaJogador, jogador_id)
+            if linha is None:
+                return False
+            if linha.google_sub is not None:
+                return linha.google_sub == google_sub
+            if s.scalar(select(TabelaJogador.id).where(TabelaJogador.google_sub == google_sub)) is not None:
+                return False
+            linha.google_sub = google_sub
+            return True

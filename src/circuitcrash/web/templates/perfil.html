@@ -14,12 +14,14 @@
         </p>
       </div>
       <a class="botao contorno pequeno" href="/loja">{{ "Trocar avatar" if meu_avatar else "Conseguir um avatar" }}</a>
+      {% if not conta_google %}
       <form method="post" action="/jogador">
         {% for j in jogadores_demo if j.id != eu.id %}
         <input type="hidden" name="jogador_id" value="{{ j.id }}">
         <button class="botao fantasma pequeno" type="submit">Demo: ver como {{ j.apelido }}{% if j.provisorio %} (usuário novo){% endif %}</button>
         {% endfor %}
       </form>
+      {% endif %}
     </div>
 
     <div class="numeros">

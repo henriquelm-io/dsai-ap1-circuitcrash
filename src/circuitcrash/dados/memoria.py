@@ -197,6 +197,7 @@ class RepositorioMemoria:
         self._avatares = {a.id: a for a in AVATARES}
         self._inventarios = {k: set(v) for k, v in INVENTARIOS.items()}
         self._partidas = {k: list(v) for k, v in PARTIDAS.items()}
+        self._contas_google: dict[str, str] = {}  # google_sub -> jogador_id
 
     def obter_jogador(self, jogador_id: str) -> Jogador | None:
         return self._jogadores.get(jogador_id)
@@ -262,3 +263,28 @@ class RepositorioMemoria:
         jogador.partidas += 1
         jogador.vitorias += int(resultado.vitoria)
         jogador.objetivos_capturados += resultado.objetivos
+
+    def obter_jogador_por_google(self, google_sub: str) -> Jogador | None:
+        jogador_id = self._contas_google.get(google_sub)
+        return self._jogadores.get(jogador_id) if jogador_id else None
+
+    def obter_jogador_por_email(self, email: str) -> Jogador | None:
+        alvo = email.strip().lower()
+        return next((j for j in self._jogadores.values() if j.email.lower() == alvo), None)
+
+    def criar_jogador_google(self, jogador: Jogador, google_sub: str) -> None:
+        if google_sub in self._contas_google or jogador.id in self._jogadores:
+            raise ValueError("Conta Google ou jogador já existe.")
+        self._jogadores[jogador.id] = jogador
+        self._contas_google[google_sub] = jogador.id
+
+    def vincular_google(self, jogador_id: str, google_sub: str) -> bool:
+        if jogador_id not in self._jogadores:
+            return False
+        atual = next((sub for sub, jid in self._contas_google.items() if jid == jogador_id), None)
+        if atual is not None:
+            return atual == google_sub
+        if google_sub in self._contas_google:
+            return False
+        self._contas_google[google_sub] = jogador_id
+        return True

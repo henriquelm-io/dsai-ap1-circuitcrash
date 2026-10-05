@@ -108,6 +108,7 @@ h1 { font-size: clamp(28px, 4vw, 36px); }
 .botao.fantasma { background: transparent; border-color: transparent; color: var(--suave); }
 .botao[disabled] { opacity: 0.55; cursor: not-allowed; }
 .botao.pequeno { min-height: 44px; font-size: 14px; padding: 0 14px; }
+.entrar-google { white-space: nowrap; text-decoration: none; }
 
 .aviso {
   padding: 12px 16px; border-radius: 12px; margin-bottom: 20px;
@@ -326,7 +327,7 @@ button.casa:focus-visible { outline: 3px solid var(--ambar); outline-offset: 2px
 }
 
 @media (max-width: 560px) {
-  .demo-troca { display: none; }
+  .demo-troca, .entrar-google .texto-longo { display: none; }
   .topo { gap: 8px; }
   .marca { font-size: 18px; }
   .marca svg { display: none; }

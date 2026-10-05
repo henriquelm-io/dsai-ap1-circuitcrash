@@ -22,3 +22,11 @@ services:
         value: sqlite:///circuitcrash.db
       - key: SECRET_KEY
         generateValue: true
+      # Login com Google (spec 008): os valores são digitados no painel do Render e não entram no repositório.
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      # Atrás do proxy do Render o servidor enxerga http; o retorno precisa ser o endereço https cadastrado no Google.
+      - key: GOOGLE_REDIRECT_URI
+        value: https://circuitcrash.onrender.com/auth/google/retorno

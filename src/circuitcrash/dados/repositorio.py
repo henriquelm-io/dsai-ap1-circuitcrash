@@ -54,3 +54,21 @@ class Repositorio(Protocol):
         valor guardado. Levanta ValueError se o jogador não existe.
         """
         ...
+
+    # Conta Google (spec 008)
+    def obter_jogador_por_google(self, google_sub: str) -> Jogador | None: ...
+
+    def obter_jogador_por_email(self, email: str) -> Jogador | None:
+        """Sem diferenciar maiúsculas."""
+        ...
+
+    def criar_jogador_google(self, jogador: Jogador, google_sub: str) -> None:
+        """Insere o jogador, no fim da lista, já ligado à conta Google."""
+        ...
+
+    def vincular_google(self, jogador_id: str, google_sub: str) -> bool:
+        """Liga a conta a um jogador que ainda não tem conta (ou já tem esta).
+
+        Devolve False se o jogador não existe ou já está ligado a outra conta.
+        """
+        ...
