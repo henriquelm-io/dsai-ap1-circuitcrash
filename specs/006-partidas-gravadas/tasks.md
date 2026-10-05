@@ -3,9 +3,9 @@
 **Entrada:** [spec.md](spec.md), [plan.md](plan.md). `[P]` = pode ser feita em paralelo. `[H#]` = história atendida.
 
 ## Fase 1 — Regras puras (H2, H3)
-- [ ] T001 [H2] [H3] `tests/test_economia.py`: testes das recompensas por colocação, casual, limite diário, `esperado`, Elo (1º sobe, 4º desce, adversários fortes rendem mais, provisório muda mais, empate de pontos, casual sem rating) e colocação inválida
-- [ ] T002 [H2] [H3] `domain/modelos.py`: `TipoPartida` e `ResultadoPartida` (com `rating_depois` e `vitoria`)
-- [ ] T003 [H2] [H3] `domain/economia.py`: constantes, `fagulhas_da_colocacao`, `aplicar_limite`, `esperado`, `variacao_elo` e `resultado_da_partida`; T001 passa
+- [x] T001 [H2] [H3] `tests/test_economia.py`: testes das recompensas por colocação, casual, limite diário, `esperado`, Elo (1º sobe, 4º desce, adversários fortes rendem mais, provisório muda mais, empate de pontos, casual sem rating) e colocação inválida
+- [x] T002 [H2] [H3] `domain/modelos.py`: `TipoPartida` e `ResultadoPartida` (com `rating_depois` e `vitoria`)
+- [x] T003 [H2] [H3] `domain/economia.py`: constantes, `fagulhas_da_colocacao`, `aplicar_limite`, `esperado`, `variacao_elo` e `resultado_da_partida`; T001 passa
 
 ## Fase 2 — Gravação no repositório (H1)
 - [ ] T004 [H1] `tests/test_partidas_gravadas.py` com a fixture `repo`: Fagulhas de hoje do exemplo, registrar atualiza o jogador e as recentes, soma no limite, jogador inexistente não grava nada, novato entra no ranking; só banco: persiste num `RepositorioSQL` novo

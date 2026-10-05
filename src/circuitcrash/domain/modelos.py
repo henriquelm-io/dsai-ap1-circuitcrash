@@ -107,3 +107,30 @@ class Conquista:
     @property
     def concluida(self) -> bool:
         return self.progresso >= self.meta
+
+
+class TipoPartida(StrEnum):
+    RANQUEADA = "ranqueada"
+    CASUAL = "casual"
+
+
+@dataclass(frozen=True)
+class ResultadoPartida:
+    """O que uma partida terminada muda no perfil do jogador (spec 006)."""
+
+    tipo: TipoPartida
+    colocacao: int
+    pontos: int
+    objetivos: int
+    rating_antes: int
+    variacao_rating: int
+    fagulhas: int
+    limite_atingido: bool
+
+    @property
+    def rating_depois(self) -> int:
+        return self.rating_antes + self.variacao_rating
+
+    @property
+    def vitoria(self) -> bool:
+        return self.colocacao == 1
