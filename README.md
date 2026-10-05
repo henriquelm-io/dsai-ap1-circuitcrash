@@ -94,6 +94,7 @@ Cada funcionalidade nasce como `spec.md` → `plan.md` → `tasks.md` em `specs/
 | Ferramenta | Modelo | Para quê |
 | --- | --- | --- |
 | Claude Code (CLI da Anthropic) | Claude Opus 5.5 (`claude-opus-5-5`) | Specs, planos, tarefas, código, testes e documentação, sempre revisados pela dupla |
+| Claude (app claude.ai, sessão de 01 a 05/10) | Claude Opus 5.5 | Telas de referência, cronograma, constituição e código inicial da spec 001 |
 
 - O fluxo segue o **Spec Kit**: constituição em `.specify/memory/constitution.md` e `spec.md` → `plan.md` → `tasks.md` antes de qualquer código.
 - As instruções para o agente ficam em `AGENTS.md` (o `CLAUDE.md` só aponta para ele), e a skill `/commit` (`.claude/skills/commit/SKILL.md`) roda os checks antes de cada commit.
