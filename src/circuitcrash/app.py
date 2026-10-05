@@ -23,19 +23,20 @@ from starlette.templating import Jinja2Templates
 from circuitcrash.dados.config import url_do_banco
 from circuitcrash.dados.fabrica import criar_repositorio
 from circuitcrash.dados.repositorio import Repositorio
-from circuitcrash.domain import loja, tabuleiro
-from circuitcrash.domain.modelos import PRECOS, Jogador, Raridade
+from circuitcrash.domain import economia, loja, tabuleiro
+from circuitcrash.domain.economia import LIMITE_DIARIO_FAGULHAS, RECOMPENSA_COLOCACAO
+from circuitcrash.domain.modelos import PRECOS, Jogador, Raridade, ResultadoPartida, TipoPartida
 from circuitcrash.web import visao
 
 AQUI = Path(__file__).parent
 templates = Jinja2Templates(directory=str(AQUI / "web" / "templates"))
 
 JOGADOR_PADRAO = "veterano"
-LIMITE_DIARIO_FAGULHAS = 400
-RECOMPENSA_COLOCACAO = {1: 40, 2: 25, 3: 15, 4: 10}
 
 # Partidas de demonstração ficam em memória, uma por navegador.
 _partidas: dict[str, tabuleiro.EstadoPartida] = {}
+# Resultado gravado de cada partida terminada, com a mesma chave (spec 006).
+_resultados: dict[str, ResultadoPartida] = {}
 
 
 def _repo(request: Request) -> Repositorio:
@@ -225,6 +226,34 @@ def _partida(request: Request) -> tabuleiro.EstadoPartida:
     return _partidas[chave]
 
 
+def _gravar_se_terminou(request: Request, estado: tabuleiro.EstadoPartida) -> bool:
+    """Grava o resultado do jogador ativo uma única vez, quando a partida termina.
+
+    Devolve True só na requisição que gravou.
+    """
+    chave = request.session.get("partida_id")
+    if not estado.terminou or not chave or chave in _resultados:
+        return False
+    repo = _repo(request)
+    jogador = _jogador(request)
+    classificacao = tabuleiro.classificacao(estado)
+    colocacao, _, pontos = next(c for c in classificacao if c[1].indice == 0)
+    adversarios = [(economia.RATING_ADVERSARIO_PADRAO, p) for _, j, p in classificacao if j.indice != 0]
+    objetivos = sum(1 for linha in estado.casas for casa in linha if casa.capturado_por == 0)
+    resultado = economia.resultado_da_partida(
+        jogador,
+        TipoPartida.RANQUEADA,
+        colocacao,
+        pontos,
+        objetivos,
+        adversarios,
+        repo.fagulhas_ganhas_hoje(jogador.id),
+    )
+    repo.registrar_partida(jogador.id, resultado)
+    _resultados[chave] = resultado
+    return True
+
+
 def _contexto_partida(request: Request, estado: tabuleiro.EstadoPartida) -> dict[str, Any]:
     jogadores = [
         {"j": j, "pontos": estado.pontos[j.indice], "energizado": tabuleiro.circuito_do_jogador(estado, j.indice)[1]}
@@ -239,18 +268,26 @@ def _contexto_partida(request: Request, estado: tabuleiro.EstadoPartida) -> dict
         "recompensas": RECOMPENSA_COLOCACAO,
         "max_rodadas": tabuleiro.MAX_RODADAS,
         "objetivos": tabuleiro.OBJETIVOS,
+        "resultado": _resultados.get(request.session.get("partida_id", "")),
+        "limite_diario": LIMITE_DIARIO_FAGULHAS,
     }
 
 
 async def partida(request: Request) -> Response:
     estado = _partida(request)
+    _gravar_se_terminou(request, estado)
     return _render(request, "partida.html", "jogar", **_contexto_partida(request, estado))
 
 
 async def _responder_jogo(request: Request) -> Response:
+    estado = _partida(request)
+    gravou = _gravar_se_terminou(request, estado)
     if request.headers.get("hx-request"):
-        estado = _partida(request)
-        return templates.TemplateResponse(request, "_jogo.html", _contexto_partida(request, estado))
+        resposta = templates.TemplateResponse(request, "_jogo.html", _contexto_partida(request, estado))
+        if gravou:
+            # O cabeçalho fica fora do #jogo: recarrega a página para mostrar as Fagulhas novas.
+            resposta.headers["HX-Refresh"] = "true"
+        return resposta
     return RedirectResponse("/partida", status_code=303)
 
 
@@ -287,6 +324,7 @@ async def acao_nova(request: Request) -> Response:
     chave = request.session.get("partida_id")
     if chave:
         _partidas.pop(chave, None)
+        _resultados.pop(chave, None)
     _partida(request)
     return await _responder_jogo(request)
 

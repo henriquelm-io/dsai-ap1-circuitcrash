@@ -15,9 +15,9 @@
 - [x] T008 [H1] `dados/carga.py`: partidas de exemplo às 00:30 menos `i` minutos; testes de paridade continuam passando
 
 ## Fase 3 — Fim de partida na tela (H1, H2, H4)
-- [ ] T009 [H1] [H4] `tests/test_paginas.py`: partida até o fim grava uma vez, `HX-Refresh` no fim via HTMX, perfil mostra a partida, "Jogar de novo" grava outra
-- [ ] T010 [H1] [H2] `app.py`: constantes vindas de `economia`, `_resultados`, `_gravar_se_terminou`, `HX-Refresh` e limpeza em `acao_nova`
-- [ ] T011 [H4] `web/templates/_jogo.html`: quadro "Seu resultado" com Fagulhas, aviso de limite e rating antes → depois
+- [x] T009 [H1] [H4] `tests/test_paginas.py`: partida até o fim grava uma vez, `HX-Refresh` no fim via HTMX, perfil mostra a partida, "Jogar de novo" grava outra
+- [x] T010 [H1] [H2] `app.py`: constantes vindas de `economia`, `_resultados`, `_gravar_se_terminou`, `HX-Refresh` e limpeza em `acao_nova`
+- [x] T011 [H4] `web/templates/_jogo.html`: quadro "Seu resultado" com Fagulhas, aviso de limite e rating antes → depois
 
 ## Fase 4 — Acabamento
 - [ ] T012 [P] `README.md` (demonstração), `docs/banco-de-dados.md` e `SPEC/2026-10-05-partidas-gravadas.md` com o status
