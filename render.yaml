@@ -1,0 +1,24 @@
+# Publicação no Render (spec 004-publicacao). Um push na main publica a versão nova.
+services:
+  - type: web
+    name: circuitcrash
+    runtime: python
+    plan: free
+    branch: main
+    autoDeploy: true
+    buildCommand: pip install uv && uv sync --frozen --no-dev
+    # O disco do plano gratuito some a cada reinício: a carga recria o banco antes do servidor subir.
+    # Se a carga falhar, o && impede o servidor de subir e o erro fica no log.
+    startCommand: .venv/bin/python -m circuitcrash.dados.carga --recriar && .venv/bin/python -m circuitcrash
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.14.2
+      - key: HOST
+        value: 0.0.0.0
+      - key: RELOAD
+        value: "0"
+      - key: DATABASE_URL
+        value: sqlite:///circuitcrash.db
+      - key: SECRET_KEY
+        generateValue: true
