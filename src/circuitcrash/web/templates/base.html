@@ -23,6 +23,14 @@
       <a href="/regras" {% if pagina == "regras" %}aria-current="page"{% endif %}>Regras</a>
     </nav>
     <div class="topo-direita">
+      {% if conta_google %}
+      <form method="post" action="/sair">
+        <button class="botao pequeno" type="submit">Sair</button>
+      </form>
+      {% else %}
+      {% if google_ativo %}
+      <a class="botao pequeno entrar-google" href="/entrar" aria-label="Entrar com Google">Entrar<span class="texto-longo"> com Google</span></a>
+      {% endif %}
       <form class="demo-troca" method="post" action="/jogador">
         <label for="jogador_id">Demo como</label>
         <select id="jogador_id" name="jogador_id" onchange="this.form.submit()" aria-label="Trocar jogador de demonstração">
@@ -32,6 +40,7 @@
         </select>
         <noscript><button class="botao pequeno" type="submit">Trocar</button></noscript>
       </form>
+      {% endif %}
       <span class="carteira" title="Suas Fagulhas">{{ raio(15) }}<span class="visualmente-oculto">Fagulhas: </span>{{ eu.fagulhas }}</span>
       <a href="/perfil" aria-label="Seu perfil">{{ avatar(meu_avatar, eu, 40) }}</a>
     </div>

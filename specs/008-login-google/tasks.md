@@ -13,10 +13,10 @@
 - [x] T006 [H1] `domain/conta.py`: `entrar_com_google`; T003 passa
 
 ## Fase 3 — Rotas e tela (H1, H2, H3)
-- [ ] T007 [H1] [H2] [H3] `tests/test_login.py` com o Google falso: sem configuração, `/entrar`, retorno, segunda entrada, `state` errado, cancelamento, retorno repetido, `nonce` errado, **Sair**, **Demo como** restrito, `ler_id_token`
-- [ ] T008 [H1] [H2] `login/google.py`: `ConfigGoogle.do_ambiente()`, `nova_tentativa`, `url_de_autorizacao`, `trocar_codigo`, `ler_id_token`
-- [ ] T009 [H1] [H2] [H3] `app.py`: `/entrar`, `/auth/google/retorno`, `/sair`, `/jogador` restrito; `criar_app(repo, google=None, trocar_codigo=None)`
-- [ ] T010 [H3] `web/templates/base.html` e `app.css`: **Entrar com Google** ou **Sair** no cabeçalho, a 360 px
+- [x] T007 [H1] [H2] [H3] `tests/test_login.py` com o Google falso: sem configuração, `/entrar`, retorno, segunda entrada, `state` errado, cancelamento, retorno repetido, `nonce` errado, **Sair**, **Demo como** restrito, `ler_id_token`
+- [x] T008 [H1] [H2] `login/google.py`: `ConfigGoogle.do_ambiente()`, `nova_tentativa`, `url_de_autorizacao`, `trocar_codigo`, `ler_id_token`
+- [x] T009 [H1] [H2] [H3] `app.py`: `/entrar`, `/auth/google/retorno`, `/sair`, `/jogador` restrito; `criar_app(repo, google_config=None, trocar_codigo=None)` (o nome `google` já é o do módulo); `perfil.html` também esconde os botões "Demo: ver como" para quem entrou com Google
+- [x] T010 [H3] `web/templates/base.html` e `app.css`: **Entrar com Google** ou **Sair** no cabeçalho, a 360 px
 
 ## Fase 4 — Configuração e acabamento
 - [ ] T011 [P] `.env.example` e `render.yaml` (`sync: false` para as credenciais, `GOOGLE_REDIRECT_URI` fixo)

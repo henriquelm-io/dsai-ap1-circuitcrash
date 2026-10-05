@@ -8,6 +8,8 @@ from __future__ import annotations
 
 import os
 import secrets
+import time
+from datetime import date
 from pathlib import Path
 from typing import Any
 
@@ -23,9 +25,10 @@ from starlette.templating import Jinja2Templates
 from circuitcrash.dados.config import url_do_banco
 from circuitcrash.dados.fabrica import criar_repositorio
 from circuitcrash.dados.repositorio import Repositorio
-from circuitcrash.domain import economia, loja, tabuleiro
+from circuitcrash.domain import conta, economia, loja, tabuleiro
 from circuitcrash.domain.economia import LIMITE_DIARIO_FAGULHAS, RECOMPENSA_COLOCACAO
 from circuitcrash.domain.modelos import PRECOS, Jogador, Raridade, ResultadoPartida, TipoPartida
+from circuitcrash.login import google
 from circuitcrash.web import visao
 
 AQUI = Path(__file__).parent
@@ -48,6 +51,8 @@ def _jogador(request: Request) -> Jogador:
     repo = _repo(request)
     jogador = repo.obter_jogador(request.session.get("jogador_id", JOGADOR_PADRAO))
     if jogador is None:
+        # Jogador sumiu (por exemplo, o banco foi recriado): volta à demonstração.
+        request.session.pop("conta_google", None)
         jogador = repo.obter_jogador(JOGADOR_PADRAO)
     assert jogador is not None
     return jogador
@@ -67,6 +72,8 @@ def _render(request: Request, nome: str, pagina: str, **contexto: Any) -> Respon
             "meu_avatar": avatar,
             "jogadores_demo": repo.listar_jogadores()[:2],
             "aviso": aviso,
+            "conta_google": bool(request.session.get("conta_google")),
+            "google_ativo": request.app.state.google is not None,
             **contexto,
         },
     )
@@ -204,10 +211,77 @@ async def regras(request: Request) -> Response:
 async def trocar_jogador(request: Request) -> Response:
     form = await request.form()
     jogador_id = str(form.get("jogador_id", JOGADOR_PADRAO))
-    if _repo(request).obter_jogador(jogador_id):
+    # Só os perfis de demonstração: ninguém entra no perfil de outra pessoa por aqui (spec 008).
+    if jogador_id in {j.id for j in _repo(request).listar_jogadores()[:2]}:
         request.session["jogador_id"] = jogador_id
+        request.session.pop("conta_google", None)
     referer = request.headers.get("referer", "/")
     return RedirectResponse(referer if referer.startswith(str(request.base_url)) else "/", status_code=303)
+
+
+# ---------- login Google (spec 008) ----------
+
+
+def _redirect_uri(request: Request, config: google.ConfigGoogle) -> str:
+    return config.redirect_uri or str(request.url_for("retorno_google"))
+
+
+def _encerrar_partida(request: Request) -> None:
+    chave = request.session.pop("partida_id", None)
+    if chave:
+        _partidas.pop(chave, None)
+        _resultados.pop(chave, None)
+
+
+async def entrar(request: Request) -> Response:
+    config: google.ConfigGoogle | None = request.app.state.google
+    if config is None:
+        _avisar(request, False, "O login com Google não está configurado neste servidor.")
+        return RedirectResponse("/", status_code=303)
+    tentativa = google.nova_tentativa()
+    request.session["login_google"] = tentativa.para_sessao()
+    url = google.url_de_autorizacao(config, _redirect_uri(request, config), tentativa)
+    return RedirectResponse(url, status_code=303)
+
+
+async def retorno_google(request: Request) -> Response:
+    config: google.ConfigGoogle | None = request.app.state.google
+    # A tentativa vale uma vez só.
+    tentativa = google.Tentativa.da_sessao(request.session.pop("login_google", None))
+    parametros = request.query_params
+    if config is None:
+        return RedirectResponse("/", status_code=303)
+    if parametros.get("error"):
+        _avisar(request, False, "Login cancelado.")
+        return RedirectResponse("/", status_code=303)
+    code = parametros.get("code", "")
+    state = parametros.get("state", "")
+    if tentativa is None or not code or not secrets.compare_digest(state.encode(), tentativa.state.encode()):
+        _avisar(request, False, "Esta resposta não pertence à sua tentativa de login. Tente de novo.")
+        return RedirectResponse("/", status_code=303)
+
+    trocar: google.TrocarCodigo = request.app.state.trocar_codigo
+    try:
+        info = trocar(config, code, tentativa.verificador, _redirect_uri(request, config))
+        identidade = conta.conferir_identidade(info, config.client_id, tentativa.nonce, int(time.time()))
+        jogador = conta.entrar_com_google(_repo(request), identidade, date.today())
+    except conta.ErroLogin as erro:
+        _avisar(request, False, str(erro))
+        return RedirectResponse("/", status_code=303)
+
+    _encerrar_partida(request)
+    request.session["jogador_id"] = jogador.id
+    request.session["conta_google"] = True
+    _avisar(request, True, f"Olá, {jogador.apelido}!")
+    return RedirectResponse("/perfil", status_code=303)
+
+
+async def sair(request: Request) -> Response:
+    _encerrar_partida(request)
+    request.session.pop("jogador_id", None)
+    request.session.pop("conta_google", None)
+    _avisar(request, True, "Você saiu.")
+    return RedirectResponse("/", status_code=303)
 
 
 async def saude(request: Request) -> Response:
@@ -321,15 +395,16 @@ async def acao_passar(request: Request) -> Response:
 
 
 async def acao_nova(request: Request) -> Response:
-    chave = request.session.get("partida_id")
-    if chave:
-        _partidas.pop(chave, None)
-        _resultados.pop(chave, None)
+    _encerrar_partida(request)
     _partida(request)
     return await _responder_jogo(request)
 
 
-def criar_app(repo: Repositorio | None = None) -> Starlette:
+def criar_app(
+    repo: Repositorio | None = None,
+    google_config: google.ConfigGoogle | None = None,
+    trocar_codigo: google.TrocarCodigo | None = None,
+) -> Starlette:
     rotas = [
         Route("/", inicio),
         Route("/partida", partida),
@@ -345,6 +420,9 @@ def criar_app(repo: Repositorio | None = None) -> Starlette:
         Route("/ranking", ranking),
         Route("/regras", regras),
         Route("/jogador", trocar_jogador, methods=["POST"]),
+        Route("/entrar", entrar),
+        Route("/auth/google/retorno", retorno_google, name="retorno_google"),
+        Route("/sair", sair, methods=["POST"]),
         Route("/health", saude),
         Mount("/static", app=StaticFiles(directory=str(AQUI / "web" / "static")), name="static"),
     ]
@@ -352,6 +430,9 @@ def criar_app(repo: Repositorio | None = None) -> Starlette:
     app = Starlette(routes=rotas, middleware=[Middleware(SessionMiddleware, secret_key=chave, same_site="lax")])
     # Sem repositório passado: banco se DATABASE_URL estiver preenchida, senão dados em memória.
     app.state.repo = repo or criar_repositorio(url_do_banco())
+    # Sem configuração passada: GOOGLE_CLIENT_ID e GOOGLE_CLIENT_SECRET; vazias, o login fica desligado.
+    app.state.google = google_config or google.ConfigGoogle.do_ambiente()
+    app.state.trocar_codigo = trocar_codigo or google.trocar_codigo
     return app
 
 
