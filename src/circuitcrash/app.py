@@ -20,7 +20,8 @@ from starlette.routing import Mount, Route
 from starlette.staticfiles import StaticFiles
 from starlette.templating import Jinja2Templates
 
-from circuitcrash.dados.memoria import RepositorioMemoria
+from circuitcrash.dados.config import url_do_banco
+from circuitcrash.dados.fabrica import criar_repositorio
 from circuitcrash.dados.repositorio import Repositorio
 from circuitcrash.domain import loja, tabuleiro
 from circuitcrash.domain.modelos import PRECOS, Jogador, Raridade
@@ -311,7 +312,8 @@ def criar_app(repo: Repositorio | None = None) -> Starlette:
     ]
     chave = os.environ.get("SECRET_KEY") or secrets.token_hex(32)
     app = Starlette(routes=rotas, middleware=[Middleware(SessionMiddleware, secret_key=chave, same_site="lax")])
-    app.state.repo = repo or RepositorioMemoria()
+    # Sem repositório passado: banco se DATABASE_URL estiver preenchida, senão dados em memória.
+    app.state.repo = repo or criar_repositorio(url_do_banco())
     return app
 
 

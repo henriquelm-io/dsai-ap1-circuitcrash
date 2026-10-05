@@ -2,7 +2,7 @@
 
 Puzzle de circuitos por turnos para 4 jogadores, jogado no navegador do computador ou do celular. Ligue sua base à fonte de energia central, capture objetivos e troque Fagulhas por avatares.
 
-Esta versão traz a **interface web completa com dados de exemplo**: partida de demonstração jogável, perfil, loja de avatares, ranking e regras. Login e banco de dados vêm nas próximas specs.
+Esta versão traz a **interface web completa**: partida de demonstração jogável, perfil, loja de avatares, ranking e regras. Os dados ficam num **banco SQLite** (ou PostgreSQL), ou em memória se nenhum banco for configurado. O login vem na próxima spec.
 
 ## Como rodar (Windows)
 
@@ -11,12 +11,31 @@ Esta versão traz a **interface web completa com dados de exemplo**: partida de 
    powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
    ```
    Feche e abra o terminal depois.
-2. Na pasta do projeto:
+2. Na pasta do projeto, instale as dependências e crie o `.env`:
    ```powershell
    uv sync
+   Copy-Item .env.example .env
+   ```
+3. Crie o banco e carregue os dados de exemplo (o `.env` já aponta para `sqlite:///circuitcrash.db`):
+   ```powershell
+   uv run python -m circuitcrash.dados.carga
+   ```
+4. Suba o servidor e abra <http://127.0.0.1:8000>:
+   ```powershell
    uv run python -m circuitcrash
    ```
-3. Abra <http://127.0.0.1:8000>.
+
+Se o `uv` der erro de certificado (`invalid peer certificate: UnknownIssuer`), algum antivírus ou proxy está inspecionando o HTTPS: rode `$env:UV_SYSTEM_CERTS = "1"` antes dos comandos.
+
+### Banco de dados
+| Para | Comando |
+| --- | --- |
+| Criar ou atualizar as tabelas | `uv run alembic upgrade head` |
+| Carregar os dados de exemplo (só se o banco estiver vazio) | `uv run python -m circuitcrash.dados.carga` |
+| Apagar tudo e recarregar o exemplo (antes de apresentar) | `uv run python -m circuitcrash.dados.carga --recriar` |
+| Usar só dados em memória | deixe `DATABASE_URL=` vazio no `.env` |
+
+Para usar **PostgreSQL**: `uv sync --extra postgres`, suba o banco (por exemplo, `docker run -d -p 5432:5432 -e POSTGRES_PASSWORD=senha -e POSTGRES_DB=circuitcrash postgres:17`) e troque no `.env`: `DATABASE_URL=postgresql://postgres:senha@localhost:5432/circuitcrash`. Os mesmos comandos de carga funcionam.
 
 No Linux ou macOS os comandos são os mesmos; o uv se instala com `curl -LsSf https://astral.sh/uv/install.sh | sh`.
 
@@ -39,7 +58,8 @@ uv run mypy
 | Pasta | O que tem |
 | --- | --- |
 | `src/circuitcrash/domain/` | Regras do jogo e da loja, em Python puro |
-| `src/circuitcrash/dados/` | Contrato `Repositorio` e a versão em memória |
+| `src/circuitcrash/dados/` | Contrato `Repositorio`, versão em memória (`memoria.py`) e com banco (`sql.py`, `tabelas.py`, `carga.py`) |
+| `migracoes/` | Migrações do banco (Alembic) |
 | `src/circuitcrash/web/` | Templates Jinja2, CSS e conversão do estado para a tela |
 | `src/circuitcrash/app.py` | Rotas |
 | `specs/` | Spec, plan e tasks de cada funcionalidade (Spec Kit) |
@@ -49,7 +69,8 @@ uv run mypy
 ## Demonstração
 - No cabeçalho, **Demo como** alterna entre `voltz_br` (veterano, com avatar) e `luma_dev` (usuário novo, sem avatar).
 - Na partida, toque numa casa vazia ao lado do seu circuito para colocar a peça selecionada, ou numa peça do tabuleiro para girá-la. Dica: a curva da mão colocada à direita da sua peça em T liga você à fonte e captura a bateria.
-- Os dados ficam em memória: reiniciar o servidor volta tudo ao estado inicial.
+- Com o banco, compras e trocas de avatar continuam depois de reiniciar o servidor. Para voltar ao estado inicial, rode a carga com `--recriar`. Sem banco (`DATABASE_URL` vazio), reiniciar volta tudo ao início.
+- As missões do dia são carregadas para a data da carga: rode `--recriar` no dia da apresentação.
 
 ## Fluxo de trabalho
 Cada funcionalidade nasce como `spec.md` → `plan.md` → `tasks.md` em `specs/NNN-nome/`, numa branch com o mesmo nome, e entra na `main` por Pull Request revisado pelo outro membro da dupla. Detalhes em `AGENTS.md`.

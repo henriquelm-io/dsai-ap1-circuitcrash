@@ -1,8 +1,26 @@
-# Guia para ligar o banco de dados
+# Guia do banco de dados
 
-As telas já funcionam com `RepositorioMemoria`. Para usar um banco de verdade, basta criar outra classe com os mesmos métodos do `Protocol` em `src/circuitcrash/dados/repositorio.py` e passá-la para `criar_app()`. Nenhum template e nenhuma regra em `domain/` precisa mudar.
+O banco foi ligado na spec `002-banco-de-dados`. `RepositorioSQL` (`src/circuitcrash/dados/sql.py`) implementa o `Protocol` de `src/circuitcrash/dados/repositorio.py` com SQLAlchemy 2, e `criar_app()` o usa quando `DATABASE_URL` está preenchida; vazia, continua o `RepositorioMemoria`. Nenhum template e nenhuma regra em `domain/` mudou.
 
-## Passo a passo sugerido
+## Como está hoje
+| Arquivo | O que faz |
+| --- | --- |
+| `dados/config.py` | `url_do_banco()` lê `DATABASE_URL`; `postgresql://` vira `postgresql+psycopg://` |
+| `dados/tabelas.py` | Tabelas SQLAlchemy (lista abaixo, mais a coluna `ordem` em jogadores, avatares, missões e conquistas) |
+| `dados/sql.py` | `RepositorioSQL`: cada método abre a própria sessão e devolve dataclasses novas |
+| `dados/fabrica.py` | `criar_repositorio(url)`: memória ou banco |
+| `dados/carga.py` | `python -m circuitcrash.dados.carga [--recriar]`: migra e carrega os dados de `memoria.py` |
+| `migracoes/` + `alembic.ini` | Migrações Alembic; a URL vem do `.env` |
+
+**Atenção:** como `RepositorioSQL` devolve objetos novos a cada chamada, mudar um `Jogador` não grava nada até chamar `salvar_jogador`.
+
+### Criar uma migração nova
+1. Atualize a branch com a `main` antes (para não criar duas migrações paralelas).
+2. Mude `dados/tabelas.py`.
+3. `uv run alembic revision --autogenerate --rev-id 0002 -m "descricao curta"` e revise o arquivo gerado em `migracoes/versions/`.
+4. `uv run alembic upgrade head` e `uv run pytest` (os testes migram um SQLite temporário do zero).
+
+## Passo a passo usado na spec 002
 1. Abrir a spec `002-banco-de-dados` (spec → plan → tasks) antes de codar.
 2. Adicionar as dependências: `uv add sqlalchemy alembic` (e `psycopg[binary]` se for PostgreSQL; SQLite não precisa de nada).
 3. Criar `src/circuitcrash/dados/sql.py` com `class RepositorioSQL` implementando todos os métodos de `Repositorio`.
