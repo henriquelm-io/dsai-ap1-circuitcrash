@@ -39,6 +39,14 @@
     {% if estado.terminou %}
     <div class="painel resultado">
       <h2>Fim de partida</h2>
+      {% if resultado %}
+      <div class="seu-resultado" role="status">
+        <h3 class="rotulo">Seu resultado</h3>
+        <p><strong>+{{ resultado.fagulhas }} Fagulhas</strong>{% if resultado.limite_atingido %}<br><span class="suave">Limite de {{ limite_diario }} Fagulhas por dia atingido</span>{% endif %}</p>
+        {% set v = resultado.variacao_rating %}
+        <p>Rating <span class="mono">{{ resultado.rating_antes }} → {{ resultado.rating_depois }}</span> <span class="mono {{ 'sobe' if v > 0 else 'desce' if v < 0 else 'suave' }}">({{ "%+d" % v }})</span></p>
+      </div>
+      {% endif %}
       <ol>
         {% for colocacao, j, pontos in classificacao %}
         <li>

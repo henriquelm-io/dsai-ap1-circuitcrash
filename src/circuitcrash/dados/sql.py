@@ -10,7 +10,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from datetime import date, datetime, timedelta
 
-from sqlalchemy import create_engine, func, select
+from sqlalchemy import create_engine, func, select, update
 from sqlalchemy.orm import sessionmaker
 
 from circuitcrash.dados.config import normalizar_url
@@ -32,6 +32,7 @@ from circuitcrash.domain.modelos import (
     Jogador,
     Missao,
     Raridade,
+    ResultadoPartida,
     ResumoPartida,
 )
 
@@ -88,10 +89,17 @@ def _avatar(linha: TabelaAvatar) -> Avatar:
 class RepositorioSQL:
     """Implementa circuitcrash.dados.repositorio.Repositorio com SQLite ou PostgreSQL."""
 
-    def __init__(self, url: str, hoje: Callable[[], date] = date.today) -> None:
+    def __init__(
+        self,
+        url: str,
+        hoje: Callable[[], date] = date.today,
+        agora: Callable[[], datetime] | None = None,
+    ) -> None:
         self.motor = create_engine(normalizar_url(url))
         self._sessao = sessionmaker(self.motor)
         self._hoje = hoje
+        # Sem relógio próprio, a hora atual vai no dia de hoje(), para os testes com dia fixo.
+        self._agora = agora or (lambda: datetime.combine(self._hoje(), datetime.now().time()))
 
     def fechar(self) -> None:
         self.motor.dispose()
@@ -197,3 +205,51 @@ class RepositorioSQL:
         )
         with self._sessao() as s:
             return [Conquista(c.nome, progresso or 0, c.meta) for c, progresso in s.execute(consulta)]
+
+    # Partidas terminadas (spec 006)
+
+    def fagulhas_ganhas_hoje(self, jogador_id: str) -> int:
+        inicio = datetime.combine(self._hoje(), datetime.min.time())
+        consulta = (
+            select(func.coalesce(func.sum(TabelaParticipacao.fagulhas), 0))
+            .join(TabelaPartida, TabelaPartida.id == TabelaParticipacao.partida_id)
+            .where(
+                TabelaParticipacao.jogador_id == jogador_id,
+                TabelaPartida.terminada_em >= inicio,
+                TabelaPartida.terminada_em < inicio + timedelta(days=1),
+            )
+        )
+        with self._sessao() as s:
+            return int(s.scalar(consulta) or 0)
+
+    def registrar_partida(self, jogador_id: str, resultado: ResultadoPartida) -> None:
+        agora = self._agora()
+        with self._sessao.begin() as s:
+            if s.get(TabelaJogador, jogador_id) is None:
+                raise ValueError(f"Jogador não encontrado: {jogador_id}.")
+            partida = TabelaPartida(tipo=resultado.tipo.value, iniciada_em=agora, terminada_em=agora)
+            s.add(partida)
+            s.flush()
+            s.add(
+                TabelaParticipacao(
+                    partida_id=partida.id,
+                    jogador_id=jogador_id,
+                    colocacao=resultado.colocacao,
+                    pontos=resultado.pontos,
+                    variacao_rating=resultado.variacao_rating,
+                    fagulhas=resultado.fagulhas,
+                )
+            )
+            s.flush()
+            # Soma ao valor do banco, para não apagar uma compra feita ao mesmo tempo.
+            s.execute(
+                update(TabelaJogador)
+                .where(TabelaJogador.id == jogador_id)
+                .values(
+                    fagulhas=TabelaJogador.fagulhas + resultado.fagulhas,
+                    rating=TabelaJogador.rating + resultado.variacao_rating,
+                    partidas=TabelaJogador.partidas + 1,
+                    vitorias=TabelaJogador.vitorias + int(resultado.vitoria),
+                    objetivos_capturados=TabelaJogador.objetivos_capturados + resultado.objetivos,
+                )
+            )

@@ -108,8 +108,9 @@ def _inserir_exemplo(s: Session, hoje: date) -> None:
 
     for jogador_id, resumos in memoria.PARTIDAS.items():
         for i, r in enumerate(resumos):
-            # Minutos decrescentes mantêm a ordem da lista entre partidas do mesmo dia.
-            terminada = datetime.combine(dia_do_resumo(r.quando, hoje), time(12, 0)) - timedelta(minutes=i)
+            # Minutos decrescentes mantêm a ordem da lista entre partidas do mesmo dia. Às 00:30,
+            # uma partida jogada no dia da carga (spec 006) aparece antes das de exemplo de "hoje".
+            terminada = datetime.combine(dia_do_resumo(r.quando, hoje), time(0, 30)) - timedelta(minutes=i)
             partida = TabelaPartida(
                 tipo="ranqueada", iniciada_em=terminada - timedelta(minutes=15), terminada_em=terminada
             )
