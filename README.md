@@ -2,7 +2,20 @@
 
 Puzzle de circuitos por turnos para 4 jogadores, jogado no navegador do computador ou do celular. Ligue sua base à fonte de energia central, capture objetivos e troque Fagulhas por avatares.
 
+**Dupla:** Henrique Lima e Severino Sobrinho
+
+**Jogue online:** _URL pública: a preencher depois da publicação no Render (ver `SPEC/2026-10-05-publicacao.md`)_
+
 Esta versão traz a **interface web completa**: partida de demonstração jogável, perfil, loja de avatares, ranking e regras. Os dados ficam num **banco SQLite** (ou PostgreSQL), ou em memória se nenhum banco for configurado. O login vem na próxima spec.
+
+## Stack
+| Camada | Tecnologia |
+| --- | --- |
+| Linguagem | Python 3.12+ (gerenciado com o `uv`) |
+| Servidor web | Starlette, servido pelo Uvicorn |
+| Telas | HTML gerado no servidor com Jinja2, CSS próprio e HTMX (o único JavaScript, carregado pronto) |
+| Dados | SQLAlchemy 2 com migrações Alembic; SQLite por padrão, PostgreSQL opcional, ou dados em memória |
+| Qualidade | pytest, ruff e mypy (modo estrito) |
 
 ## Como rodar (Windows)
 
@@ -62,9 +75,11 @@ uv run mypy
 | `migracoes/` | Migrações do banco (Alembic) |
 | `src/circuitcrash/web/` | Templates Jinja2, CSS e conversão do estado para a tela |
 | `src/circuitcrash/app.py` | Rotas |
+| `SPEC/` | Uma spec por funcionalidade, com data: o quê e por quê, critérios de aceitação e fora do escopo |
 | `specs/` | Spec, plan e tasks de cada funcionalidade (Spec Kit) |
 | `.specify/memory/constitution.md` | Regras do projeto |
 | `docs/banco-de-dados.md` | Guia para ligar o banco de dados |
+| `prompts/sessoes/` | Exportações das sessões com o agente de IA |
 
 ## Demonstração
 - No cabeçalho, **Demo como** alterna entre `voltz_br` (veterano, com avatar) e `luma_dev` (usuário novo, sem avatar).
@@ -73,4 +88,43 @@ uv run mypy
 - As missões do dia são carregadas para a data da carga: rode `--recriar` no dia da apresentação.
 
 ## Fluxo de trabalho
-Cada funcionalidade nasce como `spec.md` → `plan.md` → `tasks.md` em `specs/NNN-nome/`, numa branch com o mesmo nome, e entra na `main` por Pull Request revisado pelo outro membro da dupla. Detalhes em `AGENTS.md`.
+Cada funcionalidade nasce como `spec.md` → `plan.md` → `tasks.md` em `specs/NNN-nome/`, numa branch com o mesmo nome, e entra na `main` por Pull Request revisado pelo outro membro da dupla. A partir de 05/10, cada funcionalidade também tem uma spec datada em `SPEC/AAAA-MM-DD-nome.md`, commitada antes do código. Detalhes em `AGENTS.md`.
+
+## Ferramentas e modelos de IA
+| Ferramenta | Modelo | Para quê |
+| --- | --- | --- |
+| Claude Code (CLI da Anthropic) | Claude Opus 5.5 (`claude-opus-5-5`) | Specs, planos, tarefas, código, testes e documentação, sempre revisados pela dupla |
+| Claude (app claude.ai, sessão de 01 a 05/10) | Claude Opus 5.5 | Telas de referência, cronograma, constituição e código inicial da spec 001 |
+
+- O fluxo segue o **Spec Kit**: constituição em `.specify/memory/constitution.md` e `spec.md` → `plan.md` → `tasks.md` antes de qualquer código.
+- As instruções para o agente ficam em `AGENTS.md` (o `CLAUDE.md` só aponta para ele), e a skill `/commit` (`.claude/skills/commit/SKILL.md`) roda os checks antes de cada commit.
+- Todo commit diz quem ajudou e qual spec cumpre, nos trailers `Agent:` (ex.: `claude-code/claude-opus-5-5`) e `Spec:` (caminho da spec, ou `nenhuma`).
+- As sessões exportadas do Claude Code estão em `prompts/sessoes/`.
+
+## Contagem de linhas
+Contado com o [cloc](https://github.com/AlDanial/cloc) 2.10 em 05/10/2026. Para refazer: `cloc src` e `cloc tests`.
+
+### Código (`cloc src`)
+```
+-------------------------------------------------------------------------------
+Language                     files          blank        comment           code
+-------------------------------------------------------------------------------
+Python                          13            332             88           1385
+HTML                             9             21              0            503
+CSS                              1             20             10            312
+SVG                              1              0              0              1
+-------------------------------------------------------------------------------
+SUM:                            24            373             98           2201
+-------------------------------------------------------------------------------
+```
+
+### Testes (`cloc tests`)
+```
+-------------------------------------------------------------------------------
+Language                     files          blank        comment           code
+-------------------------------------------------------------------------------
+Python                           5            111              9            263
+-------------------------------------------------------------------------------
+SUM:                             5            111              9            263
+-------------------------------------------------------------------------------
+```

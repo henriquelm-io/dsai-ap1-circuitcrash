@@ -39,18 +39,31 @@ Se achar algo, tire do stage (`git restore --staged <arquivo>`), avise e pergunt
   - `feat`: funcionalidade nova; `fix`: correção; `docs`: só documentação ou specs; `chore`: configuração, dependências, ferramentas.
 - Se a mudança é de uma spec, cite a pasta: pela branch (`NNN-nome`) ou pelos arquivos em `specs/NNN-nome/`. Ex.: `feat: adiciona loja de avatares (spec 001-loja)`.
 - Corpo opcional, separado por uma linha em branco, explicando o porquê.
+- Trailers obrigatórios em todo commit, no último parágrafo, depois de uma linha em branco e nesta ordem:
+  - `Agent: <ferramenta>/<modelo>`: o agente de IA e o modelo que fizeram a mudança. Ex.: `Agent: claude-code/claude-opus-5-5`.
+  - `Spec: <caminho do arquivo da spec>`: a spec que a mudança cumpre, com o caminho a partir da raiz. Ex.: `Spec: SPEC/2026-10-05-publicacao.md` ou `Spec: specs/002-banco-de-dados/spec.md`. Se a mudança não for de nenhuma spec, escreva `Spec: nenhuma`.
 
-Exemplo:
+Exemplos:
 
 ```
 feat: adiciona troca de avatar (spec 001-loja)
 
 Valida no servidor se o jogador tem o avatar antes de equipar.
+
+Agent: claude-code/claude-opus-5-5
+Spec: specs/001-loja/spec.md
+```
+
+```
+chore: atualiza dependências
+
+Agent: claude-code/claude-opus-5-5
+Spec: nenhuma
 ```
 
 ## 4. Commit
 
-Faça o commit com a mensagem (use heredoc para várias linhas). Depois mostre `git log --oneline -1`.
+Faça o commit com a mensagem (use heredoc para várias linhas). Depois mostre `git log --format=%B -n 1` e confira se os trailers `Agent:` e `Spec:` estão lá.
 
 ## 5. Push
 
