@@ -27,6 +27,7 @@ Rode os quatro de qualidade antes de cada commit.
 
 ## Git
 - Uma branch por spec: `NNN-nome`.
+- Os números seguem a ordem das branches; lacunas em specs/ são branches sem spec própria (documentação e ajustes).
 - Commits em português, no imperativo: `feat: adiciona loja de avatares`.
 - Nunca commite `.env` nem credenciais.
 

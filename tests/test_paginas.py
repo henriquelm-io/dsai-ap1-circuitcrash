@@ -36,6 +36,15 @@ def test_jogada_via_htmx_devolve_so_o_jogo(cliente: TestClient) -> None:
     assert "capturou Bateria" in resposta.text
 
 
+def test_historico_mostra_as_jogadas_dos_adversarios(cliente: TestClient) -> None:
+    cliente.get("/partida")
+    resposta = cliente.post("/partida/passar", headers={"HX-Request": "true"})
+    assert "Você passou a vez" in resposta.text
+    assert "Lia passou a vez" in resposta.text
+    assert "Bruno colocou uma" in resposta.text
+    assert "Kai passou a vez" in resposta.text
+
+
 def test_jogada_sem_htmx_redireciona(cliente: TestClient) -> None:
     resposta = cliente.post("/partida/passar", follow_redirects=False)
     assert resposta.status_code == 303

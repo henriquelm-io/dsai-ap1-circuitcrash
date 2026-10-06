@@ -15,6 +15,9 @@ CENTRO = (3, 3)
 MAX_RODADAS = 12
 TAMANHO_MAO = 5
 BONUS_ENERGIZADO = 3
+SEMENTE_PADRAO = 42
+LINHAS_HISTORICO = 8
+ADVERSARIOS = (1, 2, 3)
 
 DIRECOES: dict[str, tuple[int, int]] = {"N": (-1, 0), "E": (0, 1), "S": (1, 0), "W": (0, -1)}
 OPOSTA = {"N": "S", "S": "N", "E": "W", "W": "E"}
@@ -97,13 +100,14 @@ class EstadoPartida:
     casas: list[list[Casa]]
     mao: list[PecaMao]
     pontos: list[int]
+    maos_adversarios: dict[int, list[PecaMao]] = field(default_factory=dict)
     rodada: int = 1
     selecionada: int = 0
     mensagem: str = "Escolha uma peça e toque numa casa vazia ao lado do seu circuito."
     erro: bool = False
     historico: list[str] = field(default_factory=list)
     energizados: set[tuple[int, int]] = field(default_factory=set)
-    sorteio: random.Random = field(default_factory=lambda: random.Random(42))
+    sorteio: random.Random = field(default_factory=lambda: random.Random(SEMENTE_PADRAO))
 
     @property
     def terminou(self) -> bool:
@@ -123,19 +127,23 @@ def _saidas_da_casa(casa: Casa) -> str:
     return casa.saidas
 
 
-def _sortear_peca(sorteio: random.Random) -> PecaMao:
+def sortear_peca(sorteio: random.Random) -> PecaMao:
     formato = sorteio.choice(["reta", "reta", "curva", "curva", "curva", "t", "cruzamento"])
     return PecaMao(formato, girar(FORMATOS[formato], sorteio.randrange(4)))
 
 
-def _colocar(estado: EstadoPartida, linha: int, coluna: int, saidas: str, dono: int) -> None:
+def colocar(estado: EstadoPartida, linha: int, coluna: int, saidas: str, dono: int) -> None:
     estado.casas[linha][coluna] = Casa(TipoCasa.PECA, saidas, dono)
 
 
-def nova_partida() -> EstadoPartida:
-    """Monta o tabuleiro de demonstração já no meio da partida (rodada 6)."""
+def nova_partida(semente: int = SEMENTE_PADRAO) -> EstadoPartida:
+    """Monta o tabuleiro de demonstração já no meio da partida (rodada 6).
+
+    A semente decide as mãos e os desempates dos adversários: a mesma semente,
+    com as mesmas jogadas, repete a mesma partida.
+    """
     casas = [[Casa() for _ in range(TAMANHO)] for _ in range(TAMANHO)]
-    estado = EstadoPartida(casas=casas, mao=[], pontos=[0, 0, 0, 0], rodada=6)
+    estado = EstadoPartida(casas=casas, mao=[], pontos=[0, 0, 0, 0], rodada=6, sorteio=random.Random(semente))
 
     casas[3][3] = Casa(TipoCasa.FONTE)
     for j in JOGADORES_DEMO:
@@ -149,29 +157,30 @@ def nova_partida() -> EstadoPartida:
     casas[4][4] = Casa(TipoCasa.BLOQUEIO)
 
     # Você: base (0,0) -> fonte, quase lá.
-    _colocar(estado, 0, 1, "EW", 0)
-    _colocar(estado, 0, 2, "SW", 0)
-    _colocar(estado, 1, 2, "NS", 0)
-    _colocar(estado, 2, 2, "NEW", 0)
+    colocar(estado, 0, 1, "EW", 0)
+    colocar(estado, 0, 2, "SW", 0)
+    colocar(estado, 1, 2, "NS", 0)
+    colocar(estado, 2, 2, "NEW", 0)
     # Lia: chega à fonte e à bateria (1,4).
-    _colocar(estado, 1, 6, "NS", 1)
-    _colocar(estado, 2, 6, "NW", 1)
-    _colocar(estado, 2, 5, "EW", 1)
-    _colocar(estado, 2, 4, "NSE", 1)
-    _colocar(estado, 3, 4, "NW", 1)
+    colocar(estado, 1, 6, "NS", 1)
+    colocar(estado, 2, 6, "NW", 1)
+    colocar(estado, 2, 5, "EW", 1)
+    colocar(estado, 2, 4, "NSE", 1)
+    colocar(estado, 3, 4, "NW", 1)
     # Bruno: chega à fonte e encosta na lâmpada (5,1).
-    _colocar(estado, 5, 0, "NES", 2)
-    _colocar(estado, 4, 0, "ES", 2)
-    _colocar(estado, 4, 1, "EW", 2)
-    _colocar(estado, 4, 2, "EW", 2)
-    _colocar(estado, 4, 3, "NW", 2)
+    colocar(estado, 5, 0, "NES", 2)
+    colocar(estado, 4, 0, "ES", 2)
+    colocar(estado, 4, 1, "EW", 2)
+    colocar(estado, 4, 2, "EW", 2)
+    colocar(estado, 4, 3, "NW", 2)
     # Kai: travado pelo isolante.
-    _colocar(estado, 6, 5, "EW", 3)
-    _colocar(estado, 6, 4, "NE", 3)
+    colocar(estado, 6, 5, "EW", 3)
+    colocar(estado, 6, 4, "NE", 3)
 
     estado.pontos = [4, 9, 6, 3]
-    estado.mao = [_sortear_peca(estado.sorteio) for _ in range(TAMANHO_MAO)]
+    estado.mao = [sortear_peca(estado.sorteio) for _ in range(TAMANHO_MAO)]
     estado.mao[0] = PecaMao("curva", "SW")
+    estado.maos_adversarios = {j: [sortear_peca(estado.sorteio) for _ in range(TAMANHO_MAO)] for j in ADVERSARIOS}
     recalcular(estado, pontuar=False)
     estado.historico = [
         "Kai usou Isolante na casa do meio-baixo",
@@ -261,14 +270,24 @@ def girar_selecionada(estado: EstadoPartida) -> None:
         estado.mensagem = "Peça girada. Agora escolha onde colocar."
 
 
-def _fim_do_turno(estado: EstadoPartida, texto: str) -> None:
+def registrar(estado: EstadoPartida, texto: str) -> None:
+    """Põe uma linha no topo do histórico, guardando só as mais recentes."""
     estado.historico.insert(0, texto)
-    estado.historico = estado.historico[:6]
+    del estado.historico[LINHAS_HISTORICO:]
+
+
+def _fim_do_turno(estado: EstadoPartida, texto: str) -> None:
+    """Fecha a jogada do jogador 0: os adversários jogam e a rodada avança."""
+    # Import aqui porque adversarios importa este módulo.
+    from circuitcrash.domain import adversarios
+
+    registrar(estado, texto)
+    adversarios.jogar_adversarios(estado)
     estado.rodada += 1
     if estado.terminou:
-        _, energizado, _ = circuito_do_jogador(estado, 0)
-        if energizado:
-            estado.pontos[0] += BONUS_ENERGIZADO
+        for jogador in range(len(JOGADORES_DEMO)):
+            if circuito_do_jogador(estado, jogador)[1]:
+                estado.pontos[jogador] += BONUS_ENERGIZADO
         estado.mensagem = "Fim de partida!"
     estado.erro = False
 
@@ -299,12 +318,12 @@ def jogar_na_casa(estado: EstadoPartida, linha: int, coluna: int) -> bool:
         return _recusar(estado, "Sua mão está vazia.")
 
     peca = estado.mao[estado.selecionada]
-    if not _encosta_no_circuito(estado, linha, coluna, peca.saidas):
+    if not encosta_no_circuito(estado, linha, coluna, peca.saidas):
         return _recusar(estado, "A peça precisa se ligar ao seu circuito. Gire-a ou escolha outra casa.")
 
-    _colocar(estado, linha, coluna, peca.saidas, 0)
+    colocar(estado, linha, coluna, peca.saidas, 0)
     estado.mao.pop(estado.selecionada)
-    estado.mao.append(_sortear_peca(estado.sorteio))
+    estado.mao.append(sortear_peca(estado.sorteio))
     estado.selecionada = min(estado.selecionada, len(estado.mao) - 1)
     eventos = recalcular(estado)
     estado.mensagem = "; ".join(eventos) if eventos else "Peça colocada."
@@ -318,8 +337,9 @@ def passar(estado: EstadoPartida) -> None:
         _fim_do_turno(estado, "Você passou a vez")
 
 
-def _encosta_no_circuito(estado: EstadoPartida, linha: int, coluna: int, saidas: str) -> bool:
-    circuito, _, _ = circuito_do_jogador(estado, 0)
+def encosta_no_circuito(estado: EstadoPartida, linha: int, coluna: int, saidas: str, jogador: int = 0) -> bool:
+    """Se uma peça com estas saídas, nesta casa, se liga ao circuito do jogador."""
+    circuito, _, _ = circuito_do_jogador(estado, jogador)
     for d in saidas:
         dl, dc = DIRECOES[d]
         nl, nc = linha + dl, coluna + dc
