@@ -55,8 +55,9 @@ def jogar_adversarios(estado) -> None          # jogadores 1, 2, 3
 - **Colocar:** cada peça da mão em cada orientação distinta, em cada casa vazia em que ela se liga a uma saída de uma casa do circuito do jogador (a mesma regra do jogador humano, agora com o jogador como parâmetro).
 - **Girar:** peças do próprio jogador (giro de 90° no sentido horário).
 - **Passar:** sempre válida.
-- **Simulação:** copia casas e pontos para um `EstadoPartida` novo, aplica a jogada e chama `recalcular`. Ganho = pontos do jogador depois − antes. Distância = 0 se o circuito chega à fonte; senão, a menor distância de Manhattan de uma casa do circuito até a fonte.
-- **Escolha:** colocações com ganho > 0 ou distância menor que a atual, pela chave `(ganho, -distância)`; senão, giros com ganho > 0 ou circuito maior, sem perder a energia, pela chave `(ganho, energizado, tamanho)`; senão, passar. Entre as jogadas de mesma chave, `estado.sorteio.choice`.
+- **Simulação:** copia casas e pontos para um `EstadoPartida` novo, aplica a jogada e chama `recalcular`. Ganho = pontos do jogador depois − antes.
+- **Distância até o alvo (`distancia_do_alvo`):** busca em largura pelas casas vazias, a partir das que recebem uma saída livre do circuito, até uma casa vizinha ao alvo (o número de peças que faltam, sem olhar o formato). O alvo é a fonte; com o circuito energizado, os objetivos que ele ainda não toca. `SEM_CAMINHO` quando não há caminho.
+- **Escolha:** colocações com ganho > 0 ou progresso maior que o atual, pela chave `(ganho, energizado, -distância)`; senão, giros com ganho > 0 ou circuito maior, sem perder a energia, pela chave `(ganho, energizado, tamanho)`; senão, passar. Entre as jogadas de mesma chave, `estado.sorteio.choice`.
 - **Aplicar:** colocar tira a peça da mão e compra outra do sorteio; depois `recalcular`. O histórico ganha "Lia colocou uma curva", "Bruno girou a sua peça" ou "Kai passou a vez", seguido das capturas, se houver.
 
 ## Mudanças em `tabuleiro.py`
@@ -71,6 +72,7 @@ def jogar_adversarios(estado) -> None          # jogadores 1, 2, 3
 - `test_paginas.py`: atualizar a colocação, as Fagulhas e o rating esperados do fim de partida.
 
 ## Decisões
+- **Distância por caminho de casas vazias, e não em linha reta, e o alvo muda depois de energizar:** com a distância em linha reta até a fonte, no tabuleiro da demonstração os três adversários passavam a partida inteira (Lia e Bruno já começam energizados e Kai está cercado). Contando o caminho livre e mirando o objetivo mais próximo depois da fonte, Bruno avança pela borda e captura o Núcleo.
 - **Adversário médio só gira as próprias peças:** é o que a spec pede; girar peça alheia para atrapalhar fica para o nível difícil.
 - **Rodada = uma volta dos quatro:** a partida continua com 12 rodadas e os adversários jogam inclusive na última.
 - **Bônus final para os quatro:** a tela de regras já diz "+3 se o seu circuito estiver energizado"; antes só o jogador humano recebia porque só ele jogava.

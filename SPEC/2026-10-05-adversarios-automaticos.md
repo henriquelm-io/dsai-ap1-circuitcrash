@@ -1,12 +1,12 @@
 # Adversários automáticos
 
-**Data:** 05/10/2026 · **Status:** em implementação · **Branch:** `010-adversarios-automaticos` · **Detalhes:** `specs/010-adversarios-automaticos/`
+**Data:** 05/10/2026 · **Status:** implementada, aguardando revisão no PR · **Branch:** `010-adversarios-automaticos` · **Detalhes:** `specs/010-adversarios-automaticos/`
 
 ## O quê
 Na partida da tela `/partida`, Lia, Bruno e Kai passam a jogar sozinhos. Cada um tem a própria mão de peças e, logo depois da jogada do jogador humano, faz uma jogada válida, na ordem Lia, Bruno, Kai. Só então a rodada avança.
 
 Os três jogam no nível "médio":
-1. Se der para colocar uma peça da mão que capture um objetivo ou que deixe o circuito mais perto da fonte, coloca a melhor delas.
+1. Se der para colocar uma peça da mão que capture um objetivo ou que deixe o circuito mais perto da fonte, coloca a melhor delas. Com o circuito já ligado à fonte, "mais perto" passa a ser do objetivo livre mais próximo; a distância conta as casas vazias que faltam preencher, porque peças e bloqueios fecham caminhos.
 2. Senão, se der para girar uma peça própria e com isso ligar mais casas ao circuito, gira.
 3. Senão, passa a vez.
 
@@ -26,7 +26,7 @@ Hoje a tela avisa que "os adversários estão parados nesta versão: só você j
 
 ### Estratégia "médio"
 6. **Dado** uma peça que captura um objetivo, **então** o adversário a coloca, preferindo o objetivo que vale mais.
-7. **Dado** que nenhuma peça captura objetivo, **então** coloca a que deixa o circuito mais perto da fonte, se houver.
+7. **Dado** que nenhuma peça captura objetivo, **então** coloca a que deixa o circuito mais perto da fonte (ou, se já está energizado, do objetivo livre mais próximo), se houver. Energizar o circuito conta como chegar mais perto.
 8. **Dado** que nenhuma colocação ajuda, **então** gira uma peça própria se isso ligar mais casas ao circuito; senão passa a vez.
 
 ### Repetível e visível

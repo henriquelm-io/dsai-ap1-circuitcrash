@@ -49,3 +49,34 @@ def test_partida_termina_depois_da_rodada_12() -> None:
 
 def test_mesma_semente_mesma_mao() -> None:
     assert [p.saidas for p in t.nova_partida().mao] == [p.saidas for p in t.nova_partida().mao]
+
+
+def test_jogada_aceita_aciona_os_tres_adversarios_e_avanca_uma_rodada() -> None:
+    estado = t.nova_partida()
+    t.passar(estado)
+    assert estado.rodada == 7
+    assert [linha.split()[0] for linha in estado.historico[:4]] == ["Kai", "Bruno", "Lia", "Você"]
+
+
+def test_jogada_recusada_nao_aciona_os_adversarios() -> None:
+    estado = t.nova_partida()
+    historico = list(estado.historico)
+    assert not t.jogar_na_casa(estado, 5, 5)
+    assert estado.historico == historico
+    assert estado.rodada == 6
+
+
+def test_cada_adversario_tem_a_propria_mao() -> None:
+    estado = t.nova_partida()
+    assert sorted(estado.maos_adversarios) == [1, 2, 3]
+    assert all(len(m) == t.TAMANHO_MAO for m in estado.maos_adversarios.values())
+    assert all(m is not estado.mao for m in estado.maos_adversarios.values())
+
+
+def test_bonus_final_vale_para_todo_circuito_energizado() -> None:
+    estado = t.nova_partida()
+    estado.rodada = t.MAX_RODADAS
+    estado.maos_adversarios = {j: [] for j in t.ADVERSARIOS}  # ninguém coloca peça na última rodada
+    t.passar(estado)
+    assert estado.terminou
+    assert estado.pontos == [4, 9 + t.BONUS_ENERGIZADO, 6 + t.BONUS_ENERGIZADO, 3]

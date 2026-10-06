@@ -1,6 +1,6 @@
 # Spec 010 — Adversários automáticos
 
-**Branch:** `010-adversarios-automaticos` · **Status:** em implementação · **Criada em:** 05/10/2026 · **Dono:** Henrique (regras) · **Origem:** [SPEC/2026-10-05-adversarios-automaticos.md](../../SPEC/2026-10-05-adversarios-automaticos.md)
+**Branch:** `010-adversarios-automaticos` · **Status:** implementada, aguardando revisão no PR · **Criada em:** 05/10/2026 · **Dono:** Henrique (regras) · **Origem:** [SPEC/2026-10-05-adversarios-automaticos.md](../../SPEC/2026-10-05-adversarios-automaticos.md)
 
 ## Contexto
 A spec 001 deixou de propósito "adversários que jogam sozinhos" fora do escopo: na partida de `/partida`, Lia, Bruno e Kai têm peças no tabuleiro, mas nunca jogam. A tela avisa "os adversários estão parados nesta versão" e a colocação final depende só do jogador humano. A spec 006 passou a gravar Fagulhas e rating pela colocação, o que torna a falta de disputa ainda mais visível.
@@ -30,7 +30,7 @@ Como jogador, quero adversários que busquem objetivos e a fonte, para ganhar de
 
 Critérios de aceitação:
 1. **Dado** uma peça que captura um objetivo, **então** o adversário a coloca, preferindo o objetivo que vale mais.
-2. **Dado** que nenhuma captura, **então** coloca a peça que deixa o circuito mais perto da fonte.
+2. **Dado** que nenhuma captura, **então** coloca a peça que deixa o circuito mais perto da fonte ou, com o circuito já energizado, do objetivo livre mais próximo.
 3. **Dado** que nenhuma colocação ajuda, **então** gira uma peça própria se isso ligar mais casas ao circuito; senão passa.
 
 ### H3 — Partida repetível e legível (P2)
@@ -44,7 +44,7 @@ Critérios de aceitação:
 ## Requisitos funcionais
 - **RF-01** Depois de cada jogada aceita do jogador humano, os jogadores 1, 2 e 3 jogam, nessa ordem, antes de a rodada avançar.
 - **RF-02** Jogadas possíveis de um adversário: colocar uma peça da mão (em qualquer uma das 4 orientações) numa casa vazia ligada ao próprio circuito; girar 90° uma peça própria; passar.
-- **RF-03** Escolha "médio": (a) colocação que mais pontua em capturas; (b) senão, colocação que reduz a menor distância do circuito até a fonte, a maior redução primeiro; (c) senão, giro de peça própria que aumenta o circuito; (d) senão, passar. Empates são sorteados com o sorteio da partida.
+- **RF-03** Escolha "médio": (a) colocação que mais pontua em capturas; (b) senão, colocação que energiza o circuito ou reduz a distância até o alvo, a maior redução primeiro. O alvo é a fonte; com o circuito energizado, os objetivos que ele ainda não toca. A distância é o menor número de casas vazias entre uma saída livre do circuito e uma casa vizinha ao alvo; (c) senão, giro de peça própria que aumenta o circuito; (d) senão, passar. Empates são sorteados com o sorteio da partida.
 - **RF-04** Todo sorteio (peças e desempates) usa a semente da partida.
 - **RF-05** O histórico registra uma linha por jogada de adversário.
 - **RF-06** No fim, cada jogador com circuito energizado ganha +3.
