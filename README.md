@@ -114,6 +114,18 @@ uv run mypy
 - As missões do dia são carregadas para a data da carga: rode `--recriar` no dia da apresentação.
 - No fim da partida (12 rodadas), o resultado fica gravado: o jogador ganha Fagulhas pela colocação (1º +40, 2º +25, 3º +15, 4º +10, até 400 por dia), o rating muda pelo Elo, e a partida aparece no topo do perfil. Para chegar rápido ao fim, passe a vez 7 vezes: "Você" fica em 3º (+15 Fagulhas). Spec em `specs/006-partidas-gravadas/`.
 
+## Próximos passos
+Funcionalidades planejadas em 05/10 que ficaram para depois da entrega por falta de tempo. Cada uma vai seguir o mesmo fluxo: spec, plano e tarefas em `specs/NNN-nome/` e spec datada em `SPEC/`, antes do código.
+
+| # | Funcionalidade | O que entrega | Base que já existe |
+| --- | --- | --- | --- |
+| 2 | **Cartas especiais** | As três cartas que a tela de regras já descreve: **Isolante** (bloqueia uma casa vazia), **Ponte** (passa por cima de outro circuito) e **Curto** (remove uma peça adversária que não encosta numa base), uma de cada por jogador, com a regra de não girar a mesma peça duas rodadas seguidas | Regras do tabuleiro em `domain/tabuleiro.py` e a tela da partida |
+| 4 | **Missões e conquistas com progresso real** | As missões do dia e as conquistas avançam com as partidas jogadas, renovam a cada dia e pagam a recompensa em Fagulhas ao serem concluídas, respeitando o limite diário | Tabelas `missoes`, `progresso_missoes`, `conquistas` e `progresso_conquistas` (spec 002) e as partidas gravadas (spec 006) |
+| 5 | **Painel de administração** | Telas para cadastrar e editar avatares, missões e jogadores, com validação no servidor, acessíveis só para administradores | Login com Google (spec 008), que permite definir os administradores pelo e-mail |
+| 6 | **Campeonatos** | Inscrição, chaves e tabela de classificação, com os avatares exclusivos como prêmio para os campeões | Partidas gravadas com colocação e pontos (spec 006) e os avatares exclusivos da loja |
+
+Hoje, na partida de demonstração, as cartas especiais aparecem só na tela de regras, e as missões e conquistas do perfil mostram o progresso dos dados de exemplo.
+
 ## Fluxo de trabalho
 Cada funcionalidade nasce como `spec.md` → `plan.md` → `tasks.md` em `specs/NNN-nome/`, numa branch com o mesmo nome, e entra na `main` por Pull Request revisado pelo outro membro da dupla. A partir de 05/10, cada funcionalidade também tem uma spec datada em `SPEC/AAAA-MM-DD-nome.md`, commitada antes do código. Detalhes em `AGENTS.md`.
 
@@ -129,29 +141,43 @@ Cada funcionalidade nasce como `spec.md` → `plan.md` → `tasks.md` em `specs/
 - As sessões exportadas do Claude Code estão em `prompts/sessoes/`.
 
 ## Contagem de linhas
-Contado com o [cloc](https://github.com/AlDanial/cloc) 2.10 em 05/10/2026. Para refazer: `cloc src` e `cloc tests`.
+Contado em 05/10/2026, às 22:35, com o [cloc](https://github.com/AlDanial/cloc) 2.10 e o comando do enunciado da AP1, que exclui `prompts/`, dependências, arquivos de lock e Markdown, JSON, YAML, CSV, Text e SVG:
 
-### Código (`cloc src`)
+```bash
+cloc . --vcs=git   --exclude-dir=node_modules,vendor,dist,build,prompts   --exclude-lang=Markdown,JSON,YAML,CSV,Text,SVG   --not-match-f='(lock|\.min\.)'
+```
+
+Os testes aparecem separados: a tabela de código usa o mesmo comando com `tests` a mais em `--exclude-dir`, e a de testes roda o mesmo filtro só na pasta `tests`.
+
+| Parte | Linhas de código |
+| --- | --- |
+| Código (sem `tests/`) | 2.965 |
+| Testes (`tests/`) | 937 |
+| **Total** | **3.902** |
+
+### Código
 ```
 -------------------------------------------------------------------------------
 Language                     files          blank        comment           code
 -------------------------------------------------------------------------------
-Python                          13            332             88           1385
-HTML                             9             21              0            503
-CSS                              1             20             10            312
-SVG                              1              0              0              1
+Python                          18            469            164           2030
+HTML                             9             21              0            522
+CSS                              1             20             10            315
+TOML                             1              9              0             48
+INI                              1              9              0             33
+Mako                             1              7              0             17
 -------------------------------------------------------------------------------
-SUM:                            24            373             98           2201
+SUM:                            31            535            174           2965
 -------------------------------------------------------------------------------
 ```
 
-### Testes (`cloc tests`)
+### Testes
 ```
 -------------------------------------------------------------------------------
 Language                     files          blank        comment           code
 -------------------------------------------------------------------------------
-Python                           5            111              9            263
+Python                          10            394             36            937
 -------------------------------------------------------------------------------
-SUM:                             5            111              9            263
+SUM:                            10            394             36            937
 -------------------------------------------------------------------------------
 ```
