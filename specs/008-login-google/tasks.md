@@ -21,7 +21,7 @@
 ## Fase 4 — Configuração e acabamento
 - [x] T011 [P] `.env.example` e `render.yaml` (`sync: false` para as credenciais, `GOOGLE_REDIRECT_URI` fixo)
 - [x] T012 [P] `README.md` (como criar o cliente OAuth) e status da spec
-- [x] T013 Conferir à mão com o cliente OAuth da dupla: entrar, comprar, sair, entrar de novo — em 05/10, com o cliente OAuth criado pela dupla e as credenciais só no `.env`, o login real no servidor local (`http://127.0.0.1:8000`) entrou e abriu o perfil do jogador novo. Sair, entrar de novo, compra e as recusas seguem cobertos pelos testes com o Google falso (`tests/test_login.py`). Na versão publicada, falta preencher `GOOGLE_CLIENT_ID` e `GOOGLE_CLIENT_SECRET` no painel do Render; sem elas, o botão não aparece lá
+- [x] T013 Conferir à mão com o cliente OAuth da dupla: entrar, comprar, sair, entrar de novo — em 05/10, com o cliente OAuth criado pela dupla e as credenciais só no `.env`, o login real no servidor local (`http://127.0.0.1:8000`) entrou e abriu o perfil do jogador novo. Sair, entrar de novo, compra e as recusas seguem cobertos pelos testes com o Google falso (`tests/test_login.py`). Na versão publicada, falta preencher `GOOGLE_CLIENT_ID` e `GOOGLE_CLIENT_SECRET` no painel do Render; sem elas, o botão não aparece lá. Atualização às 21:55 de 05/10: as duas variáveis foram preenchidas no painel do Render, e o login real em <https://circuitcrash.onrender.com> também entrou e abriu o perfil
 - [x] T014 `pytest`, `ruff check`, `ruff format --check` e `mypy` sem erros
 
 ## Dependências
