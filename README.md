@@ -141,29 +141,43 @@ Cada funcionalidade nasce como `spec.md` → `plan.md` → `tasks.md` em `specs/
 - As sessões exportadas do Claude Code estão em `prompts/sessoes/`.
 
 ## Contagem de linhas
-Contado com o [cloc](https://github.com/AlDanial/cloc) 2.10 em 05/10/2026. Para refazer: `cloc src` e `cloc tests`.
+Contado em 05/10/2026, às 22:35, com o [cloc](https://github.com/AlDanial/cloc) 2.10 e o comando do enunciado da AP1, que exclui `prompts/`, dependências, arquivos de lock e Markdown, JSON, YAML, CSV, Text e SVG:
 
-### Código (`cloc src`)
+```bash
+cloc . --vcs=git   --exclude-dir=node_modules,vendor,dist,build,prompts   --exclude-lang=Markdown,JSON,YAML,CSV,Text,SVG   --not-match-f='(lock|\.min\.)'
+```
+
+Os testes aparecem separados: a tabela de código usa o mesmo comando com `tests` a mais em `--exclude-dir`, e a de testes roda o mesmo filtro só na pasta `tests`.
+
+| Parte | Linhas de código |
+| --- | --- |
+| Código (sem `tests/`) | 2.965 |
+| Testes (`tests/`) | 937 |
+| **Total** | **3.902** |
+
+### Código
 ```
 -------------------------------------------------------------------------------
 Language                     files          blank        comment           code
 -------------------------------------------------------------------------------
-Python                          13            332             88           1385
-HTML                             9             21              0            503
-CSS                              1             20             10            312
-SVG                              1              0              0              1
+Python                          18            469            164           2030
+HTML                             9             21              0            522
+CSS                              1             20             10            315
+TOML                             1              9              0             48
+INI                              1              9              0             33
+Mako                             1              7              0             17
 -------------------------------------------------------------------------------
-SUM:                            24            373             98           2201
+SUM:                            31            535            174           2965
 -------------------------------------------------------------------------------
 ```
 
-### Testes (`cloc tests`)
+### Testes
 ```
 -------------------------------------------------------------------------------
 Language                     files          blank        comment           code
 -------------------------------------------------------------------------------
-Python                           5            111              9            263
+Python                          10            394             36            937
 -------------------------------------------------------------------------------
-SUM:                             5            111              9            263
+SUM:                            10            394             36            937
 -------------------------------------------------------------------------------
 ```
