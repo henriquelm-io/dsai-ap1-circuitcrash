@@ -1,43 +1,30 @@
-# Servidores MCP: ranking, perfil e loja
+# Servidor MCP do CircuitCrash: partida e ranking
 
-**Data:** 12/10/2026 · **Status:** parte 1 (ranking) implementada por Severino; perfil e loja com o Henrique · **Branch:** `011-servidores-mcp` · **Detalhes:** `specs/011-servidores-mcp/`
+**Data:** 12/10/2026 · **Status:** corrigida em 12/10/2026, implementação a seguir · **Branch:** `011-servidores-mcp` · **Detalhes:** `specs/011-servidores-mcp/`
 
 ## O quê
-Três servidores MCP (Model Context Protocol) que deixam um assistente de IA, como o Claude Code, consultar os dados do CircuitCrash numa conversa:
+Um servidor MCP (Model Context Protocol), `circuitcrash`, que deixa um agente de IA, como o Claude Code, operar o CircuitCrash:
 
-- **Ranking:** a classificação dos jogadores e a posição de um jogador.
-- **Perfil:** rating, Fagulhas, partidas, vitórias, partidas recentes, missões do dia e conquistas de um jogador.
-- **Loja:** os avatares à venda e o que um jogador consegue comprar com as Fagulhas que tem.
+- **Consultar** (leitura): o ranking, a posição de um jogador e o placar da partida em andamento.
+- **Jogar** (escrita): iniciar a partida de demonstração como um jogador do ranking, colocar ou girar peças e passar a vez. No fim, o resultado é gravado como no site: Fagulhas, rating, partidas e vitórias.
 
-Os três só leem. Nenhum deles compra, troca avatar, grava partida ou muda qualquer dado.
+O `.mcp.json` e as permissões do projeto ficam versionados: o agente lê sem pedir licença e pede licença antes de cada escrita. O uso pelo agente fica registrado em `diario/2026-10-08.md`.
 
 ## Por quê
-O professor pediu três MCPs para o aplicativo. Ranking, perfil e loja são as três áreas com dados reais no banco desde as specs 002 e 006, e respondem perguntas naturais numa conversa: "quem lidera?", "como estou indo?", "o que dá para comprar?". Só ler é mais seguro: um agente não gasta as Fagulhas de ninguém por engano.
+É o exercício "um servidor MCP para a AP1": o agente precisa operar a aplicação (num jogo, iniciar partida, jogar e consultar o placar) com pelo menos três tools, uma de leitura e uma de escrita. A primeira versão desta spec, do mesmo dia, leu o pedido como três servidores só de leitura e foi corrigida: o servidor de ranking já feito vira a parte de leitura deste servidor único.
 
 ## Critérios de aceitação
-
-### Ranking
-1. **Dado** o banco com os dados de exemplo, **quando** peço o ranking, **então** recebo os jogadores na mesma ordem da tela `/ranking`, com posição, apelido, rating, partidas e taxa de vitória.
-2. Posso pedir só os primeiros N (de 1 a 50; o padrão é 10).
-3. **Dado** um apelido, **quando** peço a posição dele, **então** recebo a posição e o rating; se ele ainda está no período provisório, a resposta diz quantas partidas faltam para entrar no ranking.
-4. Apelido que não existe dá uma mensagem clara, não um erro.
-
-### Perfil
-5. **Dado** um apelido, **quando** peço o perfil, **então** recebo os mesmos números da tela `/perfil`: rating, posição, Fagulhas, partidas, vitórias, taxa de vitória, objetivos capturados, avatar em uso, as 5 partidas mais recentes, as missões do dia e as conquistas.
-6. O e-mail do jogador nunca aparece na resposta.
-
-### Loja
-7. Posso listar os avatares, com nome, raridade, preço e descrição, filtrando por raridade.
-8. **Dado** um apelido, **quando** pergunto o que ele pode comprar, **então** recebo as Fagulhas dele, os avatares que ele já pode comprar e, para os outros à venda, quantas Fagulhas faltam. Avatares que ele já tem e os exclusivos não entram como compráveis.
-
-### Geral
-9. Cada servidor roda sozinho e pode ser ligado ao Claude Code pelo arquivo de configuração do projeto.
-10. Os servidores usam o mesmo banco do site (`DATABASE_URL` do `.env`); sem banco, usam os dados de exemplo em memória.
-11. Busca por apelido não diferencia maiúsculas.
-12. Os testes rodam contra a memória e contra o banco; `pytest`, `ruff` e `mypy` passam.
+1. **Dado** o banco com os dados de exemplo, **quando** peço o ranking ou a posição de um jogador, **então** recebo os mesmos números da tela `/ranking`; um provisório mostra quantas partidas faltam.
+2. **Dado** um apelido, **quando** inicio a partida, **então** começa a partida de demonstração da tela `/partida`, jogando como "Você" por esse jogador.
+3. **Dado** uma partida em andamento, **quando** consulto, **então** recebo rodada, placar, peças da mão, casas ocupadas e jogadas válidas.
+4. **Dado** uma jogada que não liga no meu circuito, **então** ela é recusada com o motivo e não gasta a vez.
+5. **Dado** o fim da partida, **então** o resultado é gravado uma única vez, com as mesmas regras do site, e a resposta mostra colocação, Fagulhas e rating antes e depois.
+6. As tools de leitura estão em `allow` e as de escrita em `ask`; cada docstring diz quando usar a tool.
+7. O diário registra a tarefa, as tools escolhidas, os erros do agente e a perna da tríade.
+8. Nenhuma resposta traz e-mail; apelido inexistente ou partida não iniciada respondem sem erro.
+9. Testes contra memória e banco; `pytest`, `ruff` e `mypy` passam.
 
 ## Fora do escopo
-- Comprar ou trocar avatar, jogar partidas ou mudar qualquer dado pelo MCP.
-- Login ou controle de acesso nos servidores: rodam na máquina de quem usa, sobre o banco local.
-- Publicar os servidores na internet (no Render ou em outro lugar).
-- Um servidor MCP para os adversários automáticos (spec 010), que ainda não estão na `main`.
+- Perfil e loja pelo MCP, comprar avatar ou mudar dados fora da partida.
+- Várias partidas ao mesmo tempo, partidas entre pessoas e os adversários automáticos (spec 010).
+- Login no servidor e publicação na internet.
