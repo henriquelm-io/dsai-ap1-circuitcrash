@@ -26,7 +26,7 @@
 Na parte 1, T013 a T015 valem só para o ranking; quem fizer perfil e loja completa a seção do README e repete T014 com os três servidores.
 
 - [ ] T013 [P] `README.md` (seção dos servidores MCP) e `SPEC/2026-10-12-servidores-mcp.md` com o status
-- [ ] T014 Conferir no Claude Code: os três servidores conectados (`/mcp`) e uma pergunta por ferramenta
+- [ ] T014 Conferir no Claude Code: os três servidores conectados (`/mcp`) e uma pergunta por ferramenta — ranking conferido em 12/10 por Severino: servidor aprovado, conectado no `/mcp` e respondendo ao top 5 e à posição do `luma_dev`
 - [ ] T015 `pytest`, `ruff check`, `ruff format --check` e `mypy` sem erros
 
 ## Dependências
