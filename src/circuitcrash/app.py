@@ -27,7 +27,7 @@ from circuitcrash.dados.fabrica import criar_repositorio
 from circuitcrash.dados.repositorio import Repositorio
 from circuitcrash.domain import conta, economia, loja, tabuleiro
 from circuitcrash.domain.economia import LIMITE_DIARIO_FAGULHAS, RECOMPENSA_COLOCACAO
-from circuitcrash.domain.modelos import PRECOS, Jogador, Raridade, ResultadoPartida, TipoPartida
+from circuitcrash.domain.modelos import PRECOS, Jogador, Raridade, ResultadoPartida
 from circuitcrash.login import google
 from circuitcrash.web import visao
 
@@ -310,19 +310,7 @@ def _gravar_se_terminou(request: Request, estado: tabuleiro.EstadoPartida) -> bo
         return False
     repo = _repo(request)
     jogador = _jogador(request)
-    classificacao = tabuleiro.classificacao(estado)
-    colocacao, _, pontos = next(c for c in classificacao if c[1].indice == 0)
-    adversarios = [(economia.RATING_ADVERSARIO_PADRAO, p) for _, j, p in classificacao if j.indice != 0]
-    objetivos = sum(1 for linha in estado.casas for casa in linha if casa.capturado_por == 0)
-    resultado = economia.resultado_da_partida(
-        jogador,
-        TipoPartida.RANQUEADA,
-        colocacao,
-        pontos,
-        objetivos,
-        adversarios,
-        repo.fagulhas_ganhas_hoje(jogador.id),
-    )
+    resultado = economia.resultado_da_demo(jogador, estado, repo.fagulhas_ganhas_hoje(jogador.id))
     repo.registrar_partida(jogador.id, resultado)
     _resultados[chave] = resultado
     return True

@@ -12,8 +12,8 @@
 - [x] T005 [H1] Conferido em 12/10 por stdio (top 5 igual a `/ranking`) e no Claude Code por Severino (`/mcp` conectado, top 5 e posição do `luma_dev`), ainda como servidor `circuitcrash-ranking`
 
 ## Fase 3 — Resultado da partida no domínio
-- [ ] T006 `tests/test_economia.py`: `resultado_da_demo` com a partida de demonstração terminada (colocação, pontos, objetivos, Fagulhas e rating iguais ao cálculo do site)
-- [ ] T007 `domain/economia.py`: `resultado_da_demo`; `app.py` usa a função; T006 e `tests/test_paginas.py` passam
+- [x] T006 `tests/test_economia.py`: `resultado_da_demo` com a partida de demonstração terminada (colocação, pontos, objetivos, Fagulhas e rating iguais ao cálculo do site)
+- [x] T007 `domain/economia.py`: `resultado_da_demo`; `app.py` usa a função; T006 e `tests/test_paginas.py` passam
 
 ## Fase 4 — Partida pelo MCP (H2)
 - [ ] T008 [H2] `tests/test_mcp_partida.py` com a fixture `repo`: sem partida, iniciar (apelido inexistente e válido), ver (rodada, placar, mão, casas ocupadas, jogadas válidas), jogada válida passa a vez, jogada recusada não gasta a vez nem gira a peça, peça fora da mão, girar peça do tabuleiro, passar, fim grava uma vez com o resultado na resposta e no repositório, iniciar de novo descarta, sem e-mail
