@@ -3,14 +3,14 @@
 **Entrada:** [spec.md](spec.md), [plan.md](plan.md). `[P]` = pode ser feita em paralelo. `[H#]` = história atendida.
 
 ## Fase 1 — Base comum
-- [ ] T001 `pyproject.toml`: dependência `mcp>=2.3.0` (e `uv.lock`)
-- [ ] T002 `mcps/comum.py`: `repositorio_do_ambiente`, `buscar_por_apelido` e `SO_LEITURA`
+- [x] T001 `pyproject.toml`: dependência `mcp>=2.3.0` (e `uv.lock`)
+- [x] T002 `mcps/comum.py`: `repositorio_do_ambiente`, `buscar_por_apelido` e `SO_LEITURA`
 
 ## Fase 2 — Parte 1: ranking (H1)
-- [ ] T003 [H1] `tests/test_mcp_ranking.py` com a fixture `repo`: ordem igual a `repo.ranking`, limite padrão, limite ajustado a 1..50, posição de um ranqueado, provisório com partidas que faltam, apelido sem diferenciar maiúsculas, apelido inexistente; pelo cliente MCP em processo: as duas ferramentas listadas como só leitura e uma chamada com resultado estruturado
-- [ ] T004 [H1] `mcps/ranking.py`: `ver_ranking`, `posicao_do_jogador`, `criar_servidor`, `main`; T003 passa
-- [ ] T005 [H1] `pyproject.toml`: comando `circuitcrash-mcp-ranking`; `.mcp.json` com o servidor de ranking
-- [ ] T006 [H1] Conferir à mão: o servidor sobe pelo comando, responde por stdio e os números batem com `/ranking`
+- [x] T003 [H1] `tests/test_mcp_ranking.py` com a fixture `repo`: ordem igual a `repo.ranking`, limite padrão, limite ajustado a 1..50, posição de um ranqueado, provisório com partidas que faltam, apelido sem diferenciar maiúsculas, apelido inexistente; pelo cliente MCP em processo: as duas ferramentas listadas como só leitura e uma chamada com resultado estruturado
+- [x] T004 [H1] `mcps/ranking.py`: `ver_ranking`, `posicao_do_jogador`, `criar_servidor`, `main`; T003 passa
+- [x] T005 [H1] `pyproject.toml`: comando `circuitcrash-mcp-ranking`; `.mcp.json` com o servidor de ranking
+- [x] T006 [H1] Conferir à mão: o servidor sobe pelo comando, responde por stdio e os números batem com `/ranking` — feito em 12/10 com um cliente MCP por stdio (`uv run circuitcrash-mcp-ranking`) sobre o `circuitcrash.db` local: as duas ferramentas listadas, top 5 igual ao da tela (ninacircuit, lia.ohm, voltz_br, brunovolt, kai_k), `voltz_br` em 3º, `LUMA_DEV` provisório com 3 partidas faltando e apelido inexistente sem erro
 
 ## Fase 3 — Parte 2: perfil (H2)
 - [ ] T007 [H2] `tests/test_mcp_perfil.py`: números iguais aos do jogador, posição, avatar em uso, 5 recentes, missões, conquistas, sem e-mail, apelido inexistente; cliente em processo
