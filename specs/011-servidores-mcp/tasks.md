@@ -16,8 +16,8 @@
 - [x] T007 `domain/economia.py`: `resultado_da_demo`; `app.py` usa a função; T006 e `tests/test_paginas.py` passam
 
 ## Fase 4 — Partida pelo MCP (H2)
-- [ ] T008 [H2] `tests/test_mcp_partida.py` com a fixture `repo`: sem partida, iniciar (apelido inexistente e válido), ver (rodada, placar, mão, casas ocupadas, jogadas válidas), jogada válida passa a vez, jogada recusada não gasta a vez nem gira a peça, peça fora da mão, girar peça do tabuleiro, passar, fim grava uma vez com o resultado na resposta e no repositório, iniciar de novo descarta, sem e-mail
-- [ ] T009 [H2] `mcps/partida.py`: `Mesa`, `iniciar`, `ver`, `jogar`, `passar`; T008 passa
+- [x] T008 [H2] `tests/test_mcp_partida.py` com a fixture `repo`: sem partida, iniciar (apelido inexistente e válido), ver (rodada, placar, mão, casas ocupadas, jogadas válidas), jogada válida passa a vez, jogada recusada não gasta a vez nem gira a peça, peça fora da mão, girar peça do tabuleiro, passar, fim grava uma vez com o resultado na resposta e no repositório, iniciar de novo descarta, sem e-mail
+- [x] T009 [H2] `mcps/partida.py`: `Mesa`, `iniciar`, `ver`, `jogar`, `passar`; T008 passa
 
 ## Fase 5 — Servidor único e permissões (H1, H2, H3)
 - [ ] T010 [H3] `tests/test_mcp_servidor.py`: as seis tools listadas, leitura com `read_only_hint` e escrita sem, docstrings com "Use quando"; uma partida inteira pelo cliente MCP em processo
