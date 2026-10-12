@@ -12,17 +12,19 @@
 - [x] T005 [H1] `pyproject.toml`: comando `circuitcrash-mcp-ranking`; `.mcp.json` com o servidor de ranking
 - [x] T006 [H1] Conferir à mão: o servidor sobe pelo comando, responde por stdio e os números batem com `/ranking` — feito em 12/10 com um cliente MCP por stdio (`uv run circuitcrash-mcp-ranking`) sobre o `circuitcrash.db` local: as duas ferramentas listadas, top 5 igual ao da tela (ninacircuit, lia.ohm, voltz_br, brunovolt, kai_k), `voltz_br` em 3º, `LUMA_DEV` provisório com 3 partidas faltando e apelido inexistente sem erro
 
-## Fase 3 — Parte 2: perfil (H2)
+## Fase 3 — Parte 2: perfil (H2) — com o Henrique
 - [ ] T007 [H2] `tests/test_mcp_perfil.py`: números iguais aos do jogador, posição, avatar em uso, 5 recentes, missões, conquistas, sem e-mail, apelido inexistente; cliente em processo
 - [ ] T008 [H2] `mcps/perfil.py`; T007 passa
 - [ ] T009 [H2] Comando `circuitcrash-mcp-perfil` e entrada no `.mcp.json`
 
-## Fase 4 — Parte 3: loja (H3)
+## Fase 4 — Parte 3: loja (H3) — com o Henrique
 - [ ] T010 [H3] `tests/test_mcp_loja.py`: lista completa, filtro por raridade, raridade inválida, exclusivo sem preço, o que pode comprar para `voltz_br` e `luma_dev`, sem os que já tem; cliente em processo
 - [ ] T011 [H3] `mcps/loja.py`; T010 passa
 - [ ] T012 [H3] Comando `circuitcrash-mcp-loja` e entrada no `.mcp.json`
 
 ## Fase 5 — Acabamento
+Na parte 1, T013 a T015 valem só para o ranking; quem fizer perfil e loja completa a seção do README e repete T014 com os três servidores.
+
 - [ ] T013 [P] `README.md` (seção dos servidores MCP) e `SPEC/2026-10-12-servidores-mcp.md` com o status
 - [ ] T014 Conferir no Claude Code: os três servidores conectados (`/mcp`) e uma pergunta por ferramenta
 - [ ] T015 `pytest`, `ruff check`, `ruff format --check` e `mypy` sem erros

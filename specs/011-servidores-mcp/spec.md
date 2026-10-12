@@ -1,6 +1,6 @@
 # Spec 011 — Servidores MCP: ranking, perfil e loja
 
-**Branch:** `011-servidores-mcp` · **Status:** parte 1 (ranking) implementada; perfil e loja a seguir · **Criada em:** 12/10/2026 · **Dono:** Severino (banco de dados) · **Origem:** [SPEC/2026-10-12-servidores-mcp.md](../../SPEC/2026-10-12-servidores-mcp.md)
+**Branch:** `011-servidores-mcp` · **Status:** parte 1 (ranking) implementada por Severino; perfil e loja com o Henrique · **Criada em:** 12/10/2026 · **Dono:** Severino (banco de dados) · **Origem:** [SPEC/2026-10-12-servidores-mcp.md](../../SPEC/2026-10-12-servidores-mcp.md)
 
 ## Contexto
 O professor pediu três servidores MCP (Model Context Protocol) para o aplicativo. Um MCP deixa um assistente de IA chamar ferramentas de um programa durante a conversa. Aqui, as ferramentas consultam os dados do CircuitCrash: ranking, perfil e loja, as três áreas com dados reais no banco desde as specs 002 e 006.

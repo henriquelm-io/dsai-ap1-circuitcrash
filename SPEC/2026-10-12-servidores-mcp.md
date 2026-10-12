@@ -1,6 +1,6 @@
 # Servidores MCP: ranking, perfil e loja
 
-**Data:** 12/10/2026 · **Status:** parte 1 (ranking) implementada; perfil e loja a seguir · **Branch:** `011-servidores-mcp` · **Detalhes:** `specs/011-servidores-mcp/`
+**Data:** 12/10/2026 · **Status:** parte 1 (ranking) implementada por Severino; perfil e loja com o Henrique · **Branch:** `011-servidores-mcp` · **Detalhes:** `specs/011-servidores-mcp/`
 
 ## O quê
 Três servidores MCP (Model Context Protocol) que deixam um assistente de IA, como o Claude Code, consultar os dados do CircuitCrash numa conversa:

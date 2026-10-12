@@ -71,6 +71,22 @@ Sem as credenciais no `.env`, o botão **Entrar com Google** não aparece e o si
 
 Na versão publicada, o banco volta ao exemplo a cada reinício, então os perfis criados pelo Google somem quando o serviço dorme.
 
+## Servidores MCP
+Servidores [MCP](https://modelcontextprotocol.io) (Model Context Protocol) deixam um assistente de IA, como o Claude Code, consultar os dados do CircuitCrash durante a conversa. Eles só leem: nenhum compra, troca avatar ou grava partida. Usam o mesmo banco do site (`DATABASE_URL` do `.env`) e, sem banco, os dados de exemplo em memória. Spec em `specs/011-servidores-mcp/`.
+
+| Servidor | Ferramentas | Situação |
+| --- | --- | --- |
+| `circuitcrash-ranking` | `ver_ranking(limite)`: os primeiros do ranking (padrão 10, máximo 50), com rating, partidas, vitórias e taxa de vitória · `posicao_do_jogador(apelido)`: posição e rating, ou quantas partidas faltam para um provisório entrar | Pronto |
+| `circuitcrash-perfil` | Perfil completo de um jogador | A fazer (Henrique) |
+| `circuitcrash-loja` | Avatares à venda e o que um jogador pode comprar | A fazer (Henrique) |
+
+Para usar no Claude Code:
+1. Rode `uv sync` (instala o SDK `mcp`) e, se for usar o banco, faça a carga do exemplo como em **Como rodar**.
+2. Abra o Claude Code na pasta do projeto. Ele lê o `.mcp.json` e pergunta se pode ligar o servidor `circuitcrash-ranking`: aceite.
+3. Confira com `/mcp` que ele aparece conectado e pergunte, por exemplo: "quem são os 5 primeiros do ranking do CircuitCrash?" ou "em que posição está o voltz_br?".
+
+Para rodar o servidor à mão (ele fica esperando mensagens MCP na entrada padrão): `uv run circuitcrash-mcp-ranking`.
+
 ## Publicação (Render)
 O serviço é descrito no `render.yaml` (spec `specs/004-publicacao/`). Um push na `main` publica a versão nova sozinho. A cada início, a carga roda com `--recriar` antes do servidor subir, então a demonstração sempre começa com os dados de exemplo; trocas de avatar somem quando o serviço reinicia ou dorme.
 
@@ -98,6 +114,7 @@ uv run mypy
 | `src/circuitcrash/domain/` | Regras do jogo e da loja, em Python puro |
 | `src/circuitcrash/dados/` | Contrato `Repositorio`, versão em memória (`memoria.py`) e com banco (`sql.py`, `tabelas.py`, `carga.py`) |
 | `migracoes/` | Migrações do banco (Alembic) |
+| `src/circuitcrash/mcps/` | Servidores MCP só de leitura (ranking; perfil e loja a seguir) |
 | `src/circuitcrash/login/` | Conversa com o Google no login (OpenID Connect com PKCE, só biblioteca padrão) |
 | `src/circuitcrash/web/` | Templates Jinja2, CSS e conversão do estado para a tela |
 | `src/circuitcrash/app.py` | Rotas |
