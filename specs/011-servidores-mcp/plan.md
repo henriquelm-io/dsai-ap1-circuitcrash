@@ -1,87 +1,100 @@
-# Plano — 011 Servidores MCP: ranking, perfil e loja
+# Plano — 011 Servidor MCP do CircuitCrash: partida e ranking
 
-**Spec:** [spec.md](spec.md) · **Data:** 12/10/2026
+**Spec:** [spec.md](spec.md) · **Data:** 12/10/2026 (corrigido no mesmo dia, junto com a spec)
 
 ## Resumo
-Um pacote novo, `circuitcrash/mcps/`, com um módulo por servidor. Em cada módulo, as consultas são funções comuns que recebem o `Repositorio` e devolvem dicionários tipados; o servidor MCP só embrulha essas funções como ferramentas. Assim, os testes chamam as funções direto com a fixture `repo` (memória e banco), e um teste a mais conversa com o servidor por um cliente MCP em memória. Cada servidor tem um comando próprio no `pyproject.toml` e uma entrada no `.mcp.json` da raiz, que o Claude Code lê ao abrir o projeto.
-
-A entrega é feita em partes, uma por servidor: ranking primeiro, depois perfil e loja.
+O pacote `circuitcrash/mcps/` ganha um servidor único, `servidor.py`, com seis tools. As consultas de ranking (`ranking.py`, já feitas) continuam como estão; as ações da partida ficam em `partida.py`, que só chama as regras de `domain/tabuleiro.py`. O cálculo do resultado da partida de demonstração sai de `app.py` para `domain/economia.py` (`resultado_da_demo`), e o site e o MCP passam a usar a mesma função. As permissões ficam em `.claude/settings.json` (versionado): leitura em `allow`, escrita em `ask`. O agente roda a tarefa em modo headless (`claude -p`), e o rastro das tools vai para `diario/2026-10-08.md`.
 
 ## Contexto técnico
 | Item | Escolha |
 | --- | --- |
-| SDK | `mcp` 2.3 (SDK oficial em Python). Na versão 2, o antigo `FastMCP` se chama `MCPServer` (`mcp.server.mcpserver`) |
-| Transporte | stdio: o Claude Code inicia o processo e conversa pela entrada e saída padrão |
-| Dados | `criar_repositorio(url_do_banco())` depois de `carregar_env()`, como o site; sem banco, memória |
-| Respostas | `TypedDict` como tipo de retorno: o SDK gera o esquema de saída e devolve o resultado estruturado |
-| Só leitura | Toda ferramenta é marcada com `ToolAnnotations(read_only_hint=True)` e não chama nenhum método que grava |
-| Testes | pytest; consultas com a fixture `repo`; servidor por `mcp.Client(servidor)` em processo, com `anyio` |
+| SDK | `mcp` 2.3. Na versão 2, o `FastMCP` virou `MCPServer` (`mcp.server.mcpserver`) |
+| Transporte | stdio, iniciado pelo Claude Code a partir do `.mcp.json` |
+| Dados | `Repositorio` do `.env`, como o site; sem banco, memória |
+| Estado da partida | Um objeto `Mesa` no processo do servidor: estado do tabuleiro, jogador e resultado gravado (ou `None`) |
+| Respostas | `TypedDict` como retorno; o SDK gera o esquema de saída |
+| Anotações | Leitura: `read_only_hint=True`. Escrita: `read_only_hint=False`, `destructive_hint=False` (só acrescenta), `idempotent_hint=False` |
+| Permissões | `.claude/settings.json`: `permissions.allow` com `mcp__circuitcrash__<tool>` de leitura, `permissions.ask` com as de escrita, `enabledMcpjsonServers: ["circuitcrash"]` |
+| Testes | pytest com a fixture `repo`; servidor pelo `mcp.Client(servidor)` em processo com `anyio.run` |
 
 ## Checagem da constituição
-- I Python: ok; sem JavaScript.
-- II Spec antes de código: spec commitada antes; plano e tarefas também, antes do código.
-- III Regras isoladas: nada muda em `domain/`. As consultas ficam em `mcps/`, fora do domínio.
-- IV Contrato de dados: nenhum método novo ou alterado. A busca por apelido percorre `listar_jogadores()`.
-- V Servidor decide: as ferramentas só leem; compra e troca de avatar continuam só nas rotas validadas do site.
-- VI Celular: não se aplica (sem tela nova).
-- VII Qualidade: testes para cada ferramenta; `ruff` e `mypy` estrito no código novo.
+- I Python: ok.
+- II Spec antes de código: spec corrigida e commitada antes; este plano e as tarefas também.
+- III Regras isoladas: `resultado_da_demo` vai para `domain/economia.py` sem banco, rede nem relógio (o "já ganhas hoje" vem de fora). O MCP não reimplementa regra: a lista de jogadas válidas é calculada tentando cada jogada numa cópia do estado com `tabuleiro.jogar_na_casa`.
+- IV Contrato: nenhum método novo ou alterado.
+- V Servidor decide: o agente só manda intenções (peça, giros, casa); o domínio valida.
+- VI Celular: sem tela nova.
+- VII Qualidade: testes de cada tool; `ruff` e `mypy` estrito.
 
 ## Estrutura
 ```text
-.mcp.json                     # os servidores para o Claude Code (um por parte)
-src/circuitcrash/mcps/
-├── __init__.py
-├── comum.py                  # repositório do ambiente, busca por apelido
-├── ranking.py                # parte 1: ver_ranking, posicao_do_jogador, criar_servidor, main
-├── perfil.py                 # parte 2: perfil_do_jogador
-└── loja.py                   # parte 3: listar_avatares, o_que_posso_comprar
+.mcp.json                       # servidor "circuitcrash" (troca o "circuitcrash-ranking")
+.claude/settings.json           # novo: allow (leitura) e ask (escrita)
+diario/2026-10-08.md            # novo: registro do agente usando o servidor
+src/circuitcrash/
+├── domain/economia.py          # + resultado_da_demo(jogador, estado, ja_ganhas_hoje)
+├── app.py                      # _gravar_se_terminou usa resultado_da_demo
+└── mcps/
+    ├── comum.py                # + ESCRITA (anotações das tools de escrita)
+    ├── ranking.py              # ver_ranking, posicao_do_jogador (sem servidor próprio)
+    ├── partida.py              # novo: Mesa, iniciar, ver, jogar, passar
+    └── servidor.py             # novo: criar_servidor com as 6 tools, main
 tests/
-├── test_mcp_ranking.py
-├── test_mcp_perfil.py
-└── test_mcp_loja.py
+├── test_economia.py            # + resultado_da_demo
+├── test_mcp_ranking.py         # só as funções de ranking
+├── test_mcp_partida.py         # novo
+└── test_mcp_servidor.py        # novo: tools, anotações e uma partida pelo cliente MCP
 ```
 
-## Comum (`mcps/comum.py`)
+## `domain/economia.py`
 ```python
-def repositorio_do_ambiente() -> Repositorio          # carregar_env(); criar_repositorio(url_do_banco())
-def buscar_por_apelido(repo, apelido) -> Jogador | None  # strip + casefold sobre listar_jogadores()
-SO_LEITURA = ToolAnnotations(read_only_hint=True, destructive_hint=False, idempotent_hint=True, open_world_hint=False)
+def resultado_da_demo(jogador: Jogador, estado: EstadoPartida, ja_ganhas_hoje: int,
+                      tipo: TipoPartida = TipoPartida.RANQUEADA) -> ResultadoPartida
 ```
+O mesmo cálculo que hoje está em `app._gravar_se_terminou`: colocação e pontos de "Você" (índice 0) pela `classificacao`, adversários com `RATING_ADVERSARIO_PADRAO`, objetivos capturados por 0. `app.py` passa a chamar esta função; os testes de `test_paginas.py` garantem que o site não mudou.
 
-## Parte 1 — Ranking (`mcps/ranking.py`)
+## `mcps/partida.py`
 ```python
-LIMITE_PADRAO = 10
-LIMITE_MAXIMO = 50
+@dataclass
+class Mesa:  # a partida em andamento no servidor
+    estado: EstadoPartida | None = None
+    jogador_id: str | None = None
+    resultado: ResultadoPartida | None = None
 
-class LinhaRanking(TypedDict): posicao, apelido, rating, partidas, vitorias, taxa_vitoria
-class Ranking(TypedDict): jogadores: list[LinhaRanking]; total: int
-class Posicao(TypedDict): encontrado, apelido, posicao (int | None), rating, partidas, provisorio, partidas_para_entrar, mensagem
-
-def ver_ranking(repo, limite=LIMITE_PADRAO) -> Ranking          # limite ajustado a 1..50; repo.ranking(limite)
-def posicao_do_jogador(repo, apelido) -> Posicao                # posição como em /perfil: índice em repo.ranking(1000)
-def criar_servidor(repo: Repositorio | None = None) -> MCPServer
-def main() -> None                                               # criar_servidor().run("stdio")
+def iniciar(repo, mesa, apelido) -> RespostaPartida     # nova_partida(); descarta a anterior
+def ver(mesa) -> RespostaPartida                        # leitura
+def jogar(repo, mesa, peca, giros, linha, coluna) -> RespostaPartida
+def passar(repo, mesa) -> RespostaPartida
 ```
-- `partidas_para_entrar = max(0, PARTIDAS_PARA_RANKING - partidas)`.
-- Apelido inexistente: `encontrado=False`, demais campos zerados e mensagem "Nenhum jogador com o apelido ...".
-- O repositório é criado uma vez em `criar_servidor`, quando não é passado (os testes passam o deles).
-- Comando: `circuitcrash-mcp-ranking = "circuitcrash.mcps.ranking:main"`.
+- `RespostaPartida`: `ativa`, `apelido`, `aceita`, `mensagem`, `rodada`, `max_rodadas`, `rodadas_restantes`, `terminou`, `placar` (jogador, pontos, energizado), `mao` (índice, formato, saídas), `casas` (só as ocupadas: linha, coluna, tipo, saídas, dono, objetivo, capturado por), `jogadas_validas` (peça, giros, linha, coluna, saídas resultantes) e `resultado` (colocação, pontos, Fagulhas, limite atingido, rating antes e depois) quando gravado.
+- `jogar`: peça fora da mão é recusada. Seleciona a peça e gira `giros % 4` vezes; se o domínio recusa, as saídas da peça voltam ao que eram, para a próxima tentativa partir da mesma orientação mostrada em `ver_partida`. Numa casa com peça, o domínio gira a peça do tabuleiro (peça e giros são ignorados).
+- Jogadas válidas: casas vazias vizinhas do circuito de "Você"; para cada peça e giro com saídas diferentes, `jogar_na_casa` numa `deepcopy` do estado.
+- Ao terminar (`estado.terminou`) e com `resultado is None`: `resultado_da_demo` com o jogador relido do repositório e `repo.registrar_partida`, uma vez.
+- Sem partida: `ativa=False`, mensagem "Nenhuma partida em andamento. Use iniciar_partida."
 
-## Parte 2 — Perfil (`mcps/perfil.py`)
-`perfil_do_jogador(repo, apelido)` devolve os números do jogador (sem e-mail), a posição como na parte 1, o nome do avatar em uso, `partidas_recentes(id, 5)`, `missoes_do_dia(id)` e `conquistas(id)`. Comando `circuitcrash-mcp-perfil`.
+## `mcps/servidor.py`
+| Tool | Tipo | Docstring (quando usar) |
+| --- | --- | --- |
+| `ver_ranking(limite=10)` | leitura | quando perguntarem quem lidera ou pedirem a classificação |
+| `posicao_do_jogador(apelido)` | leitura | quando perguntarem a posição ou o rating de um jogador específico; antes de iniciar uma partida, para conferir o apelido |
+| `ver_partida()` | leitura | antes de cada jogada, para ver mão, tabuleiro e jogadas válidas; e para consultar o placar |
+| `iniciar_partida(apelido)` | escrita | quando pedirem para jogar uma partida como um jogador; descarta a partida em andamento |
+| `jogar_peca(peca, giros, linha, coluna)` | escrita | na vez do jogador, para colocar uma peça da mão (de preferência uma das jogadas válidas) |
+| `passar_vez()` | escrita | quando não houver jogada válida ou útil |
 
-## Parte 3 — Loja (`mcps/loja.py`)
-- `listar_avatares(repo, raridade="todos")`: nome, raridade, preço (`None` = exclusivo, "não vendido") e descrição; raridade inválida devolve a lista de valores aceitos.
-- `o_que_posso_comprar(repo, apelido)`: Fagulhas, `pode_comprar` e `faltam` (com quanto falta), do mais barato para o mais caro, sem os que ele tem e sem exclusivos.
-- Comando `circuitcrash-mcp-loja`.
+As `instructions` do servidor resumem as regras: tabuleiro 7×7 com linhas e colunas de 0 a 6, base de "Você" em (0,0), fonte em (3,3), saídas N/E/S/W, giro de 90° no sentido horário, partida até a rodada 12, objetivos valem pontos quando capturados por um circuito ligado à fonte.
 
-## `.mcp.json`
-```json
-{ "mcpServers": { "circuitcrash-ranking": { "command": "uv", "args": ["run", "circuitcrash-mcp-ranking"] } } }
-```
-Os servidores rodam na pasta do projeto, então leem o mesmo `.env` e o mesmo `circuitcrash.db` do site. Cada parte acrescenta a sua entrada.
+Comando: `circuitcrash-mcp = "circuitcrash.mcps.servidor:main"` (substitui `circuitcrash-mcp-ranking`).
+
+## Diário (headless)
+1. Rodar `claude -p` na pasta do projeto, com `--output-format stream-json --verbose`, pedindo: "Jogue uma partida do CircuitCrash como luma_dev, tentando ficar o mais alto possível, e no fim me diga a colocação e quanto o rating e as Fagulhas mudaram."
+2. Primeira rodada sem liberar a escrita: no modo headless o `ask` não tem a quem perguntar, então a escrita deve ser negada. Isso mostra o `ask` funcionando.
+3. Segunda rodada liberando as tools de escrita só para aquela execução (`--allowedTools`), registrando no diário que a licença foi dada pela linha de comando.
+4. Extrair do rastro as tools chamadas, em ordem, as jogadas recusadas e a resposta final; conferir o resultado no banco.
+
+O banco usado é um SQLite temporário com a carga do exemplo (`DATABASE_URL` na linha de comando), para não mexer no `circuitcrash.db` de quem roda.
 
 ## Riscos
-- **Saída padrão:** no stdio, qualquer `print` corrompe o protocolo. Os módulos não imprimem nada; avisos vão para o stderr pelo `logging`.
-- **SDK novo (2.x):** a API mudou em relação aos tutoriais da versão 1. A dependência fica em `mcp>=2.3.0`.
-- **Smart App Control:** o `mcp` traz dependências compiladas (`pydantic-core`, `rpds-py`, `pywin32`). Se alguma for bloqueada, registrar no `AGENTS.md` como foi feito com o `ast-serialize`.
+- **Saída padrão:** nada de `print` nos módulos do servidor (corrompe o stdio).
+- **Muitas licenças:** a partida tem 7 jogadas (rodadas 6 a 12), e cada uma pede licença no modo interativo. É o efeito pedido pelo `ask`.
+- **Mudança em `app.py`** (área do Henrique): só troca o cálculo inline por `resultado_da_demo`, coberto pelos testes de página.

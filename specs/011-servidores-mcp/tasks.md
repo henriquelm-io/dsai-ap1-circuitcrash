@@ -1,33 +1,37 @@
-# Tarefas — 011 Servidores MCP: ranking, perfil e loja
+# Tarefas — 011 Servidor MCP do CircuitCrash: partida e ranking
 
 **Entrada:** [spec.md](spec.md), [plan.md](plan.md). `[P]` = pode ser feita em paralelo. `[H#]` = história atendida.
 
-## Fase 1 — Base comum
+## Fase 1 — Base comum (feita na primeira versão)
 - [x] T001 `pyproject.toml`: dependência `mcp>=2.3.0` (e `uv.lock`)
 - [x] T002 `mcps/comum.py`: `repositorio_do_ambiente`, `buscar_por_apelido` e `SO_LEITURA`
 
-## Fase 2 — Parte 1: ranking (H1)
-- [x] T003 [H1] `tests/test_mcp_ranking.py` com a fixture `repo`: ordem igual a `repo.ranking`, limite padrão, limite ajustado a 1..50, posição de um ranqueado, provisório com partidas que faltam, apelido sem diferenciar maiúsculas, apelido inexistente; pelo cliente MCP em processo: as duas ferramentas listadas como só leitura e uma chamada com resultado estruturado
-- [x] T004 [H1] `mcps/ranking.py`: `ver_ranking`, `posicao_do_jogador`, `criar_servidor`, `main`; T003 passa
-- [x] T005 [H1] `pyproject.toml`: comando `circuitcrash-mcp-ranking`; `.mcp.json` com o servidor de ranking
-- [x] T006 [H1] Conferir à mão: o servidor sobe pelo comando, responde por stdio e os números batem com `/ranking` — feito em 12/10 com um cliente MCP por stdio (`uv run circuitcrash-mcp-ranking`) sobre o `circuitcrash.db` local: as duas ferramentas listadas, top 5 igual ao da tela (ninacircuit, lia.ohm, voltz_br, brunovolt, kai_k), `voltz_br` em 3º, `LUMA_DEV` provisório com 3 partidas faltando e apelido inexistente sem erro
+## Fase 2 — Consultas de ranking (H1, feita na primeira versão)
+- [x] T003 [H1] `tests/test_mcp_ranking.py` com a fixture `repo`: ordem igual a `repo.ranking`, limites, posição de um ranqueado, provisório, apelido sem diferenciar maiúsculas, apelido inexistente
+- [x] T004 [H1] `mcps/ranking.py`: `ver_ranking` e `posicao_do_jogador`
+- [x] T005 [H1] Conferido em 12/10 por stdio (top 5 igual a `/ranking`) e no Claude Code por Severino (`/mcp` conectado, top 5 e posição do `luma_dev`), ainda como servidor `circuitcrash-ranking`
 
-## Fase 3 — Parte 2: perfil (H2) — com o Henrique
-- [ ] T007 [H2] `tests/test_mcp_perfil.py`: números iguais aos do jogador, posição, avatar em uso, 5 recentes, missões, conquistas, sem e-mail, apelido inexistente; cliente em processo
-- [ ] T008 [H2] `mcps/perfil.py`; T007 passa
-- [ ] T009 [H2] Comando `circuitcrash-mcp-perfil` e entrada no `.mcp.json`
+## Fase 3 — Resultado da partida no domínio
+- [ ] T006 `tests/test_economia.py`: `resultado_da_demo` com a partida de demonstração terminada (colocação, pontos, objetivos, Fagulhas e rating iguais ao cálculo do site)
+- [ ] T007 `domain/economia.py`: `resultado_da_demo`; `app.py` usa a função; T006 e `tests/test_paginas.py` passam
 
-## Fase 4 — Parte 3: loja (H3) — com o Henrique
-- [ ] T010 [H3] `tests/test_mcp_loja.py`: lista completa, filtro por raridade, raridade inválida, exclusivo sem preço, o que pode comprar para `voltz_br` e `luma_dev`, sem os que já tem; cliente em processo
-- [ ] T011 [H3] `mcps/loja.py`; T010 passa
-- [ ] T012 [H3] Comando `circuitcrash-mcp-loja` e entrada no `.mcp.json`
+## Fase 4 — Partida pelo MCP (H2)
+- [ ] T008 [H2] `tests/test_mcp_partida.py` com a fixture `repo`: sem partida, iniciar (apelido inexistente e válido), ver (rodada, placar, mão, casas ocupadas, jogadas válidas), jogada válida passa a vez, jogada recusada não gasta a vez nem gira a peça, peça fora da mão, girar peça do tabuleiro, passar, fim grava uma vez com o resultado na resposta e no repositório, iniciar de novo descarta, sem e-mail
+- [ ] T009 [H2] `mcps/partida.py`: `Mesa`, `iniciar`, `ver`, `jogar`, `passar`; T008 passa
 
-## Fase 5 — Acabamento
-Na parte 1, T013 a T015 valem só para o ranking; quem fizer perfil e loja completa a seção do README e repete T014 com os três servidores.
+## Fase 5 — Servidor único e permissões (H1, H2, H3)
+- [ ] T010 [H3] `tests/test_mcp_servidor.py`: as seis tools listadas, leitura com `read_only_hint` e escrita sem, docstrings com "Use quando"; uma partida inteira pelo cliente MCP em processo
+- [ ] T011 [H1] [H2] `mcps/servidor.py` com as seis tools e `main`; `ranking.py` sem servidor próprio; `comum.py` com `ESCRITA`; T010 passa
+- [ ] T012 [H3] `pyproject.toml`: comando `circuitcrash-mcp` no lugar de `circuitcrash-mcp-ranking`; `.mcp.json` com o servidor `circuitcrash`; `.claude/settings.json` com `allow` (leitura), `ask` (escrita) e `enabledMcpjsonServers`
+- [ ] T013 Conferir por stdio: o servidor sobe pelo comando e lista as seis tools
 
-- [ ] T013 [P] `README.md` (seção dos servidores MCP) e `SPEC/2026-10-12-servidores-mcp.md` com o status
-- [ ] T014 Conferir no Claude Code: os três servidores conectados (`/mcp`) e uma pergunta por ferramenta — ranking conferido em 12/10 por Severino: servidor aprovado, conectado no `/mcp` e respondendo ao top 5 e à posição do `luma_dev`
-- [ ] T015 `pytest`, `ruff check`, `ruff format --check` e `mypy` sem erros
+## Fase 6 — Agente e diário (H3)
+- [ ] T014 [H3] Rodar a tarefa com `claude -p` em modo headless num SQLite temporário: primeiro sem liberar a escrita (o `ask` deve barrar), depois liberando as tools de escrita para aquela execução
+- [ ] T015 [H3] `diario/2026-10-08.md`: tarefa, tools chamadas em ordem, onde o agente errou, resultado conferido no banco e a perna da tríade que o servidor abre
+
+## Fase 7 — Acabamento
+- [ ] T016 [P] `README.md` (seção do servidor MCP) e `SPEC/2026-10-12-servidores-mcp.md` com o status
+- [ ] T017 `pytest`, `ruff check`, `ruff format --check` e `mypy` sem erros
 
 ## Dependências
-Fase 1 → Fase 2 → Fase 3 → Fase 4 → Fase 5. As fases 3 e 4 só dependem da fase 1 e podem ser feitas em qualquer ordem. Em cada fase, os testes vêm antes da implementação. T015 roda também ao fim de cada fase, antes do commit.
+Fase 3 → Fase 4 → Fase 5 → Fase 6 → Fase 7. Em cada fase, os testes vêm antes da implementação. T017 roda também antes de cada commit.
