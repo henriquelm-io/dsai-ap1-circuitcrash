@@ -27,8 +27,10 @@ Partida de demonstração: tabuleiro {tabuleiro.TAMANHO}x{tabuleiro.TAMANHO}, li
 Cada peça tem saídas N, E, S e W (norte = linha menor, leste = coluna maior). Um giro vira a peça 90 graus no \
 sentido horário. Uma peça só pode ser colocada numa casa vazia se uma das saídas dela encontrar uma saída do seu \
 circuito. Objetivos (bateria 3, lâmpada 2, núcleo 5 pontos) são capturados quando o seu circuito ligado à fonte \
-chega a eles. A partida começa na rodada 6 e termina depois da rodada {tabuleiro.MAX_RODADAS}; quem termina ligado \
-à fonte ganha mais {tabuleiro.BONUS_ENERGIZADO} pontos. No fim, Fagulhas e rating são gravados para o jogador.
+chega a eles; os pontos de um objetivo, uma vez ganhos, não se perdem. A partida começa na rodada 6 e termina \
+depois da rodada {tabuleiro.MAX_RODADAS}; se "Você" terminar ligado à fonte, ganha mais {tabuleiro.BONUS_ENERGIZADO} \
+pontos (o bônus é só seu). Na demonstração, Lia, Bruno e Kai não jogam: o tabuleiro deles fica parado e só as suas \
+jogadas mudam o placar. No fim, Fagulhas e rating são gravados para o jogador.
 Fluxo: iniciar_partida → ver_partida → jogar_peca ou passar_vez, até terminar."""
 
 

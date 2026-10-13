@@ -89,3 +89,10 @@ def test_mcp_json_e_permissoes_do_projeto() -> None:
     assert permitidas == {f"mcp__circuitcrash__{nome}" for nome in LEITURA}
     assert perguntar == {f"mcp__circuitcrash__{nome}" for nome in ESCRITA}
     assert config["enabledMcpjsonServers"] == ["circuitcrash"]
+
+
+def test_instrucoes_explicam_o_que_o_agente_errou_no_diario() -> None:
+    # diario/2026-10-08.md: o agente achou que todos ganhavam o bônus e que os adversários jogavam.
+    assert "o bônus é só seu" in servidor.INSTRUCOES
+    assert "não jogam" in servidor.INSTRUCOES
+    assert "não se perdem" in servidor.INSTRUCOES
