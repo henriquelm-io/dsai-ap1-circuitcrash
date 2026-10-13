@@ -1,1 +1,1 @@
-"""Servidores MCP do CircuitCrash: consultas de ranking, perfil e loja, só de leitura (spec 011)."""
+"""Servidor MCP do CircuitCrash: consulta o ranking e joga a partida de demonstração (spec 011)."""

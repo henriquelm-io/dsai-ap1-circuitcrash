@@ -1,18 +1,12 @@
-"""Servidor MCP de ranking: a classificação e a posição de um jogador (spec 011, parte 1).
-
-Rode com: uv run circuitcrash-mcp-ranking (o Claude Code inicia sozinho pelo .mcp.json).
-"""
+"""Consultas de ranking do servidor MCP: a classificação e a posição de um jogador (spec 011)."""
 
 from __future__ import annotations
 
-from typing import Annotated, TypedDict
-
-from mcp.server.mcpserver import MCPServer
-from pydantic import Field
+from typing import TypedDict
 
 from circuitcrash.dados.repositorio import Repositorio
 from circuitcrash.domain.modelos import PARTIDAS_PARA_RANKING
-from circuitcrash.mcps.comum import SO_LEITURA, buscar_por_apelido, repositorio_do_ambiente
+from circuitcrash.mcps.comum import buscar_por_apelido
 
 LIMITE_PADRAO = 10
 LIMITE_MAXIMO = 50
@@ -93,41 +87,3 @@ def posicao_do_jogador(repo: Repositorio, apelido: str) -> Posicao:
         "partidas_para_entrar": faltam,
         "mensagem": mensagem,
     }
-
-
-def criar_servidor(repo: Repositorio | None = None) -> MCPServer:
-    """Sem repositório, usa o do .env (o mesmo banco do site)."""
-    dados = repo if repo is not None else repositorio_do_ambiente()
-    servidor = MCPServer(
-        "circuitcrash-ranking",
-        instructions=(
-            "Ranking do CircuitCrash, um jogo de puzzle de circuitos para 4 jogadores. "
-            f"Só entram no ranking jogadores com pelo menos {PARTIDAS_PARA_RANKING} partidas. Só consulta."
-        ),
-    )
-
-    @servidor.tool(name="ver_ranking", annotations=SO_LEITURA)
-    def ver_ranking_(
-        limite: Annotated[
-            int, Field(description=f"Quantos jogadores mostrar, de 1 a {LIMITE_MAXIMO}.")
-        ] = LIMITE_PADRAO,
-    ) -> Ranking:
-        """Mostra o ranking do CircuitCrash, do maior rating para o menor, com partidas e taxa de vitória."""
-        return ver_ranking(dados, limite)
-
-    @servidor.tool(name="posicao_do_jogador", annotations=SO_LEITURA)
-    def posicao_do_jogador_(
-        apelido: Annotated[str, Field(description="Apelido do jogador, como voltz_br (sem diferenciar maiúsculas).")],
-    ) -> Posicao:
-        """Diz a posição e o rating de um jogador no ranking, ou quantas partidas faltam para ele entrar."""
-        return posicao_do_jogador(dados, apelido)
-
-    return servidor
-
-
-def main() -> None:
-    criar_servidor().run("stdio")
-
-
-if __name__ == "__main__":
-    main()

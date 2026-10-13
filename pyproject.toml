@@ -27,7 +27,7 @@ dev = [
 
 [project.scripts]
 circuitcrash = "circuitcrash.__main__:main"
-circuitcrash-mcp-ranking = "circuitcrash.mcps.ranking:main"
+circuitcrash-mcp = "circuitcrash.mcps.servidor:main"
 
 [project.optional-dependencies]
 postgres = [

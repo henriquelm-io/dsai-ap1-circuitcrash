@@ -1,11 +1,5 @@
-"""Servidor MCP de ranking (spec 011, parte 1)."""
+"""Consultas de ranking do servidor MCP (spec 011)."""
 
-from typing import Any
-
-import anyio
-from mcp import Client
-
-from circuitcrash.dados.memoria import RepositorioMemoria
 from circuitcrash.dados.repositorio import Repositorio
 from circuitcrash.mcps import ranking
 
@@ -79,33 +73,3 @@ def test_apelido_inexistente_responde_sem_erro(repo: Repositorio) -> None:
 def test_respostas_nao_trazem_email(repo: Repositorio) -> None:
     textos = str(ranking.ver_ranking(repo, 50)) + str(ranking.posicao_do_jogador(repo, "voltz_br"))
     assert "@" not in textos
-
-
-def _pelo_cliente(nome: str, argumentos: dict[str, Any]) -> tuple[list[Any], Any]:
-    servidor = ranking.criar_servidor(RepositorioMemoria())
-
-    async def conversar() -> tuple[list[Any], Any]:
-        async with Client(servidor) as cliente:
-            ferramentas = (await cliente.list_tools()).tools
-            resultado = await cliente.call_tool(nome, argumentos)
-            return ferramentas, resultado
-
-    return anyio.run(conversar)
-
-
-def test_servidor_lista_as_duas_ferramentas_so_de_leitura() -> None:
-    ferramentas, _ = _pelo_cliente("ver_ranking", {})
-    assert {f.name for f in ferramentas} == {"ver_ranking", "posicao_do_jogador"}
-    for ferramenta in ferramentas:
-        assert ferramenta.annotations is not None
-        assert ferramenta.annotations.read_only_hint
-        assert ferramenta.description
-
-
-def test_servidor_devolve_resultado_estruturado() -> None:
-    _, resultado = _pelo_cliente("ver_ranking", {"limite": 2})
-    assert not resultado.is_error
-    assert [linha["apelido"] for linha in resultado.structured_content["jogadores"]] == ["ninacircuit", "lia.ohm"]
-
-    _, resultado = _pelo_cliente("posicao_do_jogador", {"apelido": "luma_dev"})
-    assert resultado.structured_content["partidas_para_entrar"] == 3

@@ -20,10 +20,10 @@
 - [x] T009 [H2] `mcps/partida.py`: `Mesa`, `iniciar`, `ver`, `jogar`, `passar`; T008 passa
 
 ## Fase 5 — Servidor único e permissões (H1, H2, H3)
-- [ ] T010 [H3] `tests/test_mcp_servidor.py`: as seis tools listadas, leitura com `read_only_hint` e escrita sem, docstrings com "Use quando"; uma partida inteira pelo cliente MCP em processo
-- [ ] T011 [H1] [H2] `mcps/servidor.py` com as seis tools e `main`; `ranking.py` sem servidor próprio; `comum.py` com `ESCRITA`; T010 passa
-- [ ] T012 [H3] `pyproject.toml`: comando `circuitcrash-mcp` no lugar de `circuitcrash-mcp-ranking`; `.mcp.json` com o servidor `circuitcrash`; `.claude/settings.json` com `allow` (leitura), `ask` (escrita) e `enabledMcpjsonServers`
-- [ ] T013 Conferir por stdio: o servidor sobe pelo comando e lista as seis tools
+- [x] T010 [H3] `tests/test_mcp_servidor.py`: as seis tools listadas, leitura com `read_only_hint` e escrita sem, docstrings com "Use quando"; uma partida inteira pelo cliente MCP em processo
+- [x] T011 [H1] [H2] `mcps/servidor.py` com as seis tools e `main`; `ranking.py` sem servidor próprio; `comum.py` com `ESCRITA`; T010 passa
+- [x] T012 [H3] `pyproject.toml`: comando `circuitcrash-mcp` no lugar de `circuitcrash-mcp-ranking`; `.mcp.json` com o servidor `circuitcrash`; `.claude/settings.json` com `allow` (leitura), `ask` (escrita) e `enabledMcpjsonServers`
+- [x] T013 Conferir por stdio: o servidor sobe pelo comando e lista as seis tools — feito em 12/10 com `uv run circuitcrash-mcp` em memória: três de leitura, três de escrita, e `iniciar_partida` como `luma_dev` com 16 jogadas válidas
 
 ## Fase 6 — Agente e diário (H3)
 - [ ] T014 [H3] Rodar a tarefa com `claude -p` em modo headless num SQLite temporário: primeiro sem liberar a escrita (o `ask` deve barrar), depois liberando as tools de escrita para aquela execução

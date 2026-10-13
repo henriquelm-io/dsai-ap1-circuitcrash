@@ -1,8 +1,8 @@
 {
   "mcpServers": {
-    "circuitcrash-ranking": {
+    "circuitcrash": {
       "command": "uv",
-      "args": ["run", "circuitcrash-mcp-ranking"]
+      "args": ["run", "circuitcrash-mcp"]
     }
   }
 }

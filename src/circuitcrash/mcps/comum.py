@@ -1,4 +1,4 @@
-"""Peças usadas pelos três servidores MCP."""
+"""Peças comuns às tools do servidor MCP."""
 
 from __future__ import annotations
 
@@ -9,8 +9,10 @@ from circuitcrash.dados.fabrica import criar_repositorio
 from circuitcrash.dados.repositorio import Repositorio
 from circuitcrash.domain.modelos import Jogador
 
-# Nenhuma ferramenta muda dados: só consulta o banco do próprio projeto.
+# Tools que só consultam o banco do próprio projeto.
 SO_LEITURA = ToolAnnotations(read_only_hint=True, destructive_hint=False, idempotent_hint=True, open_world_hint=False)
+# Tools que mudam a partida e, no fim dela, gravam o resultado: só acrescentam, não apagam nada.
+ESCRITA = ToolAnnotations(read_only_hint=False, destructive_hint=False, idempotent_hint=False, open_world_hint=False)
 
 
 def repositorio_do_ambiente() -> Repositorio:
