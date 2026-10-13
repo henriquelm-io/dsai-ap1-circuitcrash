@@ -1,6 +1,6 @@
 # Spec 011 — Servidor MCP do CircuitCrash: partida e ranking
 
-**Branch:** `011-servidores-mcp` · **Status:** corrigida em 12/10/2026, implementação a seguir · **Criada em:** 12/10/2026 · **Dono:** Severino · **Origem:** [SPEC/2026-10-12-servidores-mcp.md](../../SPEC/2026-10-12-servidores-mcp.md)
+**Branch:** `011-servidores-mcp` · **Status:** corrigida e implementada em 12/10/2026, aguardando revisão no PR #11 · **Criada em:** 12/10/2026 · **Dono:** Severino · **Origem:** [SPEC/2026-10-12-servidores-mcp.md](../../SPEC/2026-10-12-servidores-mcp.md)
 
 ## Contexto
 Exercício da disciplina (slide "Exercício: um servidor MCP para a AP1"): **um** servidor MCP ligado à aplicação da AP1, para o agente operar a aplicação por ele. O enunciado pede:

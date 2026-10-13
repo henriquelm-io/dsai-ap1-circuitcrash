@@ -31,8 +31,8 @@
 
 ## Fase 7 — Acabamento
 - [x] T018 Instruções do servidor corrigidas depois da execução 5 (bônus só de "Você", adversários parados, pontos não se perdem), com teste
-- [ ] T016 [P] `README.md` (seção do servidor MCP) e `SPEC/2026-10-12-servidores-mcp.md` com o status
-- [ ] T017 `pytest`, `ruff check`, `ruff format --check` e `mypy` sem erros
+- [x] T016 [P] `README.md` (seção do servidor MCP) e `SPEC/2026-10-12-servidores-mcp.md` com o status
+- [x] T017 `pytest`, `ruff check`, `ruff format --check` e `mypy` sem erros
 
 ## Dependências
 Fase 3 → Fase 4 → Fase 5 → Fase 6 → Fase 7. Em cada fase, os testes vêm antes da implementação. T017 roda também antes de cada commit.

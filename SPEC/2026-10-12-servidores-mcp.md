@@ -1,6 +1,6 @@
 # Servidor MCP do CircuitCrash: partida e ranking
 
-**Data:** 12/10/2026 · **Status:** corrigida em 12/10/2026, implementação a seguir · **Branch:** `011-servidores-mcp` · **Detalhes:** `specs/011-servidores-mcp/`
+**Data:** 12/10/2026 · **Status:** corrigida e implementada em 12/10/2026, aguardando revisão no PR #11 · **Branch:** `011-servidores-mcp` · **Detalhes:** `specs/011-servidores-mcp/`
 
 ## O quê
 Um servidor MCP (Model Context Protocol), `circuitcrash`, que deixa um agente de IA, como o Claude Code, operar o CircuitCrash:
