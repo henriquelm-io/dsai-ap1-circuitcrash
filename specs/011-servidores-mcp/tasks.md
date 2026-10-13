@@ -26,10 +26,11 @@
 - [x] T013 Conferir por stdio: o servidor sobe pelo comando e lista as seis tools — feito em 12/10 com `uv run circuitcrash-mcp` em memória: três de leitura, três de escrita, e `iniciar_partida` como `luma_dev` com 16 jogadas válidas
 
 ## Fase 6 — Agente e diário (H3)
-- [ ] T014 [H3] Rodar a tarefa com `claude -p` em modo headless num SQLite temporário: primeiro sem liberar a escrita (o `ask` deve barrar), depois liberando as tools de escrita para aquela execução
-- [ ] T015 [H3] `diario/2026-10-08.md`: tarefa, tools chamadas em ordem, onde o agente errou, resultado conferido no banco e a perna da tríade que o servidor abre
+- [x] T014 [H3] Rodar a tarefa com `claude -p` em modo headless num SQLite temporário: primeiro sem liberar a escrita (o `ask` deve barrar), depois liberando as tools de escrita para aquela execução — feito em 12/10 em seis execuções (detalhes no diário): pasta não confiável ignora o `allow` do projeto, `--settings` explícito aplica `allow`/`ask`, `--allowedTools` não vence o `ask`, e as escritas passaram por um aprovador (`--permission-prompt-tool`) fora do repositório; partida completa duas vezes (1º, +40 Fagulhas, rating 1200 → 1224)
+- [x] T015 [H3] `diario/2026-10-08.md`: tarefa, tools chamadas em ordem, onde o agente errou, resultado conferido no banco e a perna da tríade que o servidor abre
 
 ## Fase 7 — Acabamento
+- [x] T018 Instruções do servidor corrigidas depois da execução 5 (bônus só de "Você", adversários parados, pontos não se perdem), com teste
 - [ ] T016 [P] `README.md` (seção do servidor MCP) e `SPEC/2026-10-12-servidores-mcp.md` com o status
 - [ ] T017 `pytest`, `ruff check`, `ruff format --check` e `mypy` sem erros
 
