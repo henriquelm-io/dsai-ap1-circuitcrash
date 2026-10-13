@@ -144,19 +144,10 @@ async def pagina_loja(request: Request) -> Response:
     avatares = repo.listar_avatares()
     if filtro != "todos":
         avatares = [a for a in avatares if a.raridade.value == filtro]
-    cartoes = []
-    for a in avatares:
-        if a.id == jogador.avatar_id:
-            estado = "em_uso"
-        elif a.id in meus:
-            estado = "possui"
-        elif a.preco is None:
-            estado = "exclusivo"
-        elif a.preco <= jogador.fagulhas:
-            estado = "comprar"
-        else:
-            estado = "falta"
-        cartoes.append({"avatar": a, "estado": estado, "falta": (a.preco or 0) - jogador.fagulhas})
+    cartoes = [
+        {"avatar": a, "estado": loja.situacao(a, jogador, meus).value, "falta": loja.faltam(a, jogador)}
+        for a in avatares
+    ]
     filtros = [("todos", "Todos")] + [(r.value, r.rotulo) for r in Raridade]
     return _render(
         request,

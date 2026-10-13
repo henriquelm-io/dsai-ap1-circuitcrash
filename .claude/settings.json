@@ -4,7 +4,8 @@
     "allow": [
       "mcp__circuitcrash__ver_ranking",
       "mcp__circuitcrash__posicao_do_jogador",
-      "mcp__circuitcrash__ver_partida"
+      "mcp__circuitcrash__ver_partida",
+      "mcp__circuitcrash__consultar_loja"
     ],
     "ask": [
       "mcp__circuitcrash__iniciar_partida",

@@ -1,7 +1,7 @@
-"""Servidor MCP do CircuitCrash: ranking e partida de demonstração (spec 011).
+"""Servidor MCP do CircuitCrash: ranking, partida de demonstração (spec 011) e loja (spec 012).
 
 Rode com: uv run circuitcrash-mcp (o Claude Code inicia sozinho pelo .mcp.json).
-Leitura: ver_ranking, posicao_do_jogador, ver_partida. Escrita: iniciar_partida,
+Leitura: ver_ranking, posicao_do_jogador, ver_partida, consultar_loja. Escrita: iniciar_partida,
 jogar_peca, passar_vez. As permissões (allow/ask) ficam em .claude/settings.json.
 """
 
@@ -14,11 +14,14 @@ from pydantic import Field
 
 from circuitcrash.dados.repositorio import Repositorio
 from circuitcrash.domain import tabuleiro
-from circuitcrash.domain.modelos import PARTIDAS_PARA_RANKING
-from circuitcrash.mcps import partida, ranking
+from circuitcrash.domain.modelos import PARTIDAS_PARA_RANKING, PRECOS
+from circuitcrash.mcps import loja, partida, ranking
 from circuitcrash.mcps.comum import ESCRITA, SO_LEITURA, repositorio_do_ambiente
+from circuitcrash.mcps.loja import RespostaLoja
 from circuitcrash.mcps.partida import Mesa, RespostaPartida
 from circuitcrash.mcps.ranking import Posicao, Ranking
+
+_PRECOS = ", ".join(f"{raridade.rotulo} {preco}" for raridade, preco in PRECOS.items())
 
 INSTRUCOES = f"""CircuitCrash: puzzle de circuitos por turnos para 4 jogadores.
 Ranking: só entram jogadores com pelo menos {PARTIDAS_PARA_RANKING} partidas.
@@ -31,7 +34,9 @@ chega a eles; os pontos de um objetivo, uma vez ganhos, não se perdem. A partid
 depois da rodada {tabuleiro.MAX_RODADAS}; se "Você" terminar ligado à fonte, ganha mais {tabuleiro.BONUS_ENERGIZADO} \
 pontos (o bônus é só seu). Na demonstração, Lia, Bruno e Kai não jogam: o tabuleiro deles fica parado e só as suas \
 jogadas mudam o placar. No fim, Fagulhas e rating são gravados para o jogador.
-Fluxo: iniciar_partida → ver_partida → jogar_peca ou passar_vez, até terminar."""
+Fluxo: iniciar_partida → ver_partida → jogar_peca ou passar_vez, até terminar.
+Loja: avatares comprados com Fagulhas por raridade ({_PRECOS}); os exclusivos não são vendidos. Pelo MCP a \
+loja só é consultada (consultar_loja); comprar e equipar são feitos no site."""
 
 
 def criar_servidor(repo: Repositorio | None = None) -> MCPServer:
@@ -74,6 +79,18 @@ def criar_servidor(repo: Repositorio | None = None) -> MCPServer:
         Não muda nada. Sem partida em andamento, avisa para usar iniciar_partida.
         """
         return partida.ver(mesa)
+
+    @servidor.tool(name="consultar_loja", annotations=SO_LEITURA)
+    def consultar_loja(
+        apelido: Annotated[str, Field(description="Apelido do jogador, como lia.ohm (sem diferenciar maiúsculas).")],
+    ) -> RespostaLoja:
+        """Mostra a loja de avatares para um jogador: Fagulhas, avatar equipado, avatares que ele possui e o
+        catálogo com preço, raridade e o que ele consegue comprar agora (ou quanto falta).
+
+        Use quando perguntarem quantas Fagulhas um jogador tem, quais avatares ele possui ou o que dá para
+        comprar. Só consulta: não compra nem equipa; isso é feito no site, na tela /loja.
+        """
+        return loja.consultar_loja(dados, apelido)
 
     # ---------- escrita ----------
 

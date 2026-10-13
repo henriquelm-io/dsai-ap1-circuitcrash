@@ -8,9 +8,9 @@ import anyio
 from mcp import Client
 
 from circuitcrash.dados.memoria import RepositorioMemoria
-from circuitcrash.mcps import servidor
+from circuitcrash.mcps import loja, servidor
 
-LEITURA = {"ver_ranking", "posicao_do_jogador", "ver_partida"}
+LEITURA = {"ver_ranking", "posicao_do_jogador", "ver_partida", "consultar_loja"}
 ESCRITA = {"iniciar_partida", "jogar_peca", "passar_vez"}
 RAIZ = Path(__file__).resolve().parent.parent
 
@@ -29,7 +29,7 @@ def _conversar(chamadas: list[tuple[str, dict[str, Any]]]) -> tuple[list[Any], l
     return ferramentas, resultados, repo
 
 
-def test_seis_tools_tres_de_leitura_e_tres_de_escrita() -> None:
+def test_sete_tools_quatro_de_leitura_e_tres_de_escrita() -> None:
     ferramentas, _, _ = _conversar([])
     por_nome = {f.name: f for f in ferramentas}
     assert set(por_nome) == LEITURA | ESCRITA
@@ -54,6 +54,20 @@ def test_consulta_o_ranking_pelo_cliente() -> None:
     assert not ranking.is_error
     assert [linha["apelido"] for linha in ranking.structured_content["jogadores"]] == ["ninacircuit", "lia.ohm"]
     assert posicao.structured_content["partidas_para_entrar"] == 3
+
+
+def test_consulta_a_loja_pelo_cliente() -> None:
+    _, (consulta, inexistente), repo = _conversar(
+        [("consultar_loja", {"apelido": "lia.ohm"}), ("consultar_loja", {"apelido": "ninguem"})]
+    )
+    assert not consulta.is_error
+    assert consulta.structured_content == loja.consultar_loja(repo, "lia.ohm")
+    assert consulta.structured_content["compraveis"] == 4
+    assert not inexistente.is_error
+    assert not inexistente.structured_content["encontrado"]
+    lia = repo.obter_jogador("lia")
+    assert lia is not None
+    assert lia.fagulhas == 900
 
 
 def test_uma_partida_inteira_pelo_cliente() -> None:
@@ -96,3 +110,9 @@ def test_instrucoes_explicam_o_que_o_agente_errou_no_diario() -> None:
     assert "o bônus é só seu" in servidor.INSTRUCOES
     assert "não jogam" in servidor.INSTRUCOES
     assert "não se perdem" in servidor.INSTRUCOES
+
+
+def test_instrucoes_trazem_os_precos_da_loja() -> None:
+    assert "Comum 150" in servidor.INSTRUCOES
+    assert "Lendário 2000" in servidor.INSTRUCOES
+    assert "exclusivos não são vendidos" in servidor.INSTRUCOES

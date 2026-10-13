@@ -3,14 +3,44 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from enum import StrEnum
 
 from circuitcrash.dados.repositorio import Repositorio
+from circuitcrash.domain.modelos import Avatar, Jogador
 
 
 @dataclass(frozen=True)
 class Resultado:
     ok: bool
     mensagem: str
+
+
+class Situacao(StrEnum):
+    """Como um avatar aparece para o jogador na loja (os valores são os do template loja.html)."""
+
+    EM_USO = "em_uso"
+    POSSUI = "possui"
+    EXCLUSIVO = "exclusivo"
+    COMPRAR = "comprar"
+    FALTA = "falta"
+
+
+def situacao(avatar: Avatar, jogador: Jogador, inventario: set[str]) -> Situacao:
+    """A mesma para a tela /loja e para o servidor MCP (spec 012)."""
+    if avatar.id == jogador.avatar_id:
+        return Situacao.EM_USO
+    if avatar.id in inventario:
+        return Situacao.POSSUI
+    if avatar.preco is None:
+        return Situacao.EXCLUSIVO
+    if avatar.preco <= jogador.fagulhas:
+        return Situacao.COMPRAR
+    return Situacao.FALTA
+
+
+def faltam(avatar: Avatar, jogador: Jogador) -> int:
+    """Fagulhas que faltam para comprar; 0 se o saldo cobre ou se o avatar não é vendido."""
+    return max(0, (avatar.preco or 0) - jogador.fagulhas)
 
 
 def comprar(repo: Repositorio, jogador_id: str, avatar_id: str) -> Resultado:

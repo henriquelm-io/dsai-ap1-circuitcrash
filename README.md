@@ -72,13 +72,14 @@ Sem as credenciais no `.env`, o botão **Entrar com Google** não aparece e o si
 Na versão publicada, o banco volta ao exemplo a cada reinício, então os perfis criados pelo Google somem quando o serviço dorme.
 
 ## Servidor MCP
-O servidor [MCP](https://modelcontextprotocol.io) (Model Context Protocol) `circuitcrash` deixa um agente de IA, como o Claude Code, operar o CircuitCrash: consultar o ranking e jogar a partida de demonstração como um jogador. No fim da partida, Fagulhas e rating são gravados como no site. Ele usa o mesmo banco do site (`DATABASE_URL` do `.env`) e, sem banco, os dados de exemplo em memória. Spec em `specs/011-servidores-mcp/`.
+O servidor [MCP](https://modelcontextprotocol.io) (Model Context Protocol) `circuitcrash` deixa um agente de IA, como o Claude Code, operar o CircuitCrash: consultar o ranking, consultar a loja de avatares de um jogador e jogar a partida de demonstração como um jogador. No fim da partida, Fagulhas e rating são gravados como no site. Ele usa o mesmo banco do site (`DATABASE_URL` do `.env`) e, sem banco, os dados de exemplo em memória. Specs em `specs/011-servidores-mcp/` e `specs/012-mcp-loja/`.
 
 | Tool | Tipo | Quando o agente usa |
 | --- | --- | --- |
 | `ver_ranking(limite)` | leitura | classificação, do maior rating para o menor (padrão 10, máximo 50) |
 | `posicao_do_jogador(apelido)` | leitura | posição e rating de um jogador, ou quantas partidas faltam para um provisório entrar |
 | `ver_partida()` | leitura | placar, mão, casas ocupadas e jogadas válidas, antes de cada jogada |
+| `consultar_loja(apelido)` | leitura | Fagulhas, avatar equipado, avatares possuídos e o catálogo com preço, raridade e o que dá para comprar agora (não compra nem equipa) |
 | `iniciar_partida(apelido)` | escrita | começar a partida de demonstração jogando como esse jogador |
 | `jogar_peca(peca, giros, linha, coluna)` | escrita | colocar uma peça da mão, girada, numa casa ligada ao circuito |
 | `passar_vez()` | escrita | quando não há jogada útil |
@@ -119,7 +120,7 @@ uv run mypy
 | `src/circuitcrash/domain/` | Regras do jogo e da loja, em Python puro |
 | `src/circuitcrash/dados/` | Contrato `Repositorio`, versão em memória (`memoria.py`) e com banco (`sql.py`, `tabelas.py`, `carga.py`) |
 | `migracoes/` | Migrações do banco (Alembic) |
-| `src/circuitcrash/mcps/` | Servidor MCP: consultas de ranking e partida jogada pelo agente |
+| `src/circuitcrash/mcps/` | Servidor MCP: consultas de ranking e da loja, e partida jogada pelo agente |
 | `src/circuitcrash/login/` | Conversa com o Google no login (OpenID Connect com PKCE, só biblioteca padrão) |
 | `src/circuitcrash/web/` | Templates Jinja2, CSS e conversão do estado para a tela |
 | `src/circuitcrash/app.py` | Rotas |

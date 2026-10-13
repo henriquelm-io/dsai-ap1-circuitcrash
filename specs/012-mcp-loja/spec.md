@@ -1,6 +1,6 @@
 # Spec 012 — Loja de avatares no servidor MCP
 
-**Branch:** `012-mcp-loja` · **Status:** rascunho, aguardando revisão · **Criada em:** 13/10/2026 · **Dono:** Henrique · **Origem:** [SPEC/2026-10-13-mcp-loja.md](../../SPEC/2026-10-13-mcp-loja.md)
+**Branch:** `012-mcp-loja` · **Status:** aprovada e implementada em 13/10/2026 · **Criada em:** 13/10/2026 · **Dono:** Henrique · **Origem:** [SPEC/2026-10-13-mcp-loja.md](../../SPEC/2026-10-13-mcp-loja.md)
 
 ## Contexto
 A spec 011 criou o servidor MCP `circuitcrash`, com o ranking e a partida de demonstração, e deixou a loja fora do escopo. Esta spec acrescenta ao **mesmo** servidor uma consulta da loja de avatares, só de leitura. Comprar e equipar continuam só pelo site, onde o jogador está logado.
