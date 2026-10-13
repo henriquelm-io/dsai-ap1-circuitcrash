@@ -8,7 +8,9 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 
+from circuitcrash.domain import tabuleiro
 from circuitcrash.domain.modelos import Jogador, ResultadoPartida, TipoPartida
+from circuitcrash.domain.tabuleiro import EstadoPartida
 
 RECOMPENSA_COLOCACAO = {1: 40, 2: 25, 3: 15, 4: 10}
 LIMITE_DIARIO_FAGULHAS = 400
@@ -85,3 +87,22 @@ def resultado_da_partida(
         fagulhas=fagulhas,
         limite_atingido=fagulhas < ganho,
     )
+
+
+def resultado_da_demo(
+    jogador: Jogador,
+    estado: EstadoPartida,
+    ja_ganhas_hoje: int,
+    tipo: TipoPartida = TipoPartida.RANQUEADA,
+) -> ResultadoPartida:
+    """Resultado de "Você" numa partida de demonstração terminada (usado pelo site e pelo MCP).
+
+    Os adversários da demonstração valem o rating padrão.
+    """
+    if not estado.terminou:
+        raise ValueError("A partida ainda não terminou.")
+    classificacao = tabuleiro.classificacao(estado)
+    colocacao, _, pontos = next(c for c in classificacao if c[1].indice == 0)
+    adversarios = [(RATING_ADVERSARIO_PADRAO, p) for _, j, p in classificacao if j.indice != 0]
+    objetivos = sum(1 for linha in estado.casas for casa in linha if casa.capturado_por == 0)
+    return resultado_da_partida(jogador, tipo, colocacao, pontos, objetivos, adversarios, ja_ganhas_hoje)

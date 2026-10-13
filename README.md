@@ -71,6 +71,27 @@ Sem as credenciais no `.env`, o botão **Entrar com Google** não aparece e o si
 
 Na versão publicada, o banco volta ao exemplo a cada reinício, então os perfis criados pelo Google somem quando o serviço dorme.
 
+## Servidor MCP
+O servidor [MCP](https://modelcontextprotocol.io) (Model Context Protocol) `circuitcrash` deixa um agente de IA, como o Claude Code, operar o CircuitCrash: consultar o ranking e jogar a partida de demonstração como um jogador. No fim da partida, Fagulhas e rating são gravados como no site. Ele usa o mesmo banco do site (`DATABASE_URL` do `.env`) e, sem banco, os dados de exemplo em memória. Spec em `specs/011-servidores-mcp/`.
+
+| Tool | Tipo | Quando o agente usa |
+| --- | --- | --- |
+| `ver_ranking(limite)` | leitura | classificação, do maior rating para o menor (padrão 10, máximo 50) |
+| `posicao_do_jogador(apelido)` | leitura | posição e rating de um jogador, ou quantas partidas faltam para um provisório entrar |
+| `ver_partida()` | leitura | placar, mão, casas ocupadas e jogadas válidas, antes de cada jogada |
+| `iniciar_partida(apelido)` | escrita | começar a partida de demonstração jogando como esse jogador |
+| `jogar_peca(peca, giros, linha, coluna)` | escrita | colocar uma peça da mão, girada, numa casa ligada ao circuito |
+| `passar_vez()` | escrita | quando não há jogada útil |
+
+O `.mcp.json` liga o servidor, e o `.claude/settings.json` (versionado) põe as tools de leitura em `allow` (sem perguntar) e as de escrita em `ask` (o Claude Code pede licença a cada jogada).
+
+Para usar no Claude Code:
+1. Rode `uv sync` e, se for usar o banco, faça a carga do exemplo como em **Como rodar**.
+2. Abra o Claude Code na pasta do projeto e aceite a confiança na pasta e o servidor `circuitcrash`. Sem aceitar a confiança, o Claude Code ignora o `allow` do projeto e pergunta também nas leituras.
+3. Confira com `/mcp` e peça, por exemplo: "jogue uma partida do CircuitCrash como luma_dev e me diga quanto o rating e as Fagulhas mudaram". Depois confira em `/perfil` como `luma_dev`.
+
+Para rodar o servidor à mão (ele fica esperando mensagens MCP na entrada padrão): `uv run circuitcrash-mcp`. O registro do agente usando o servidor, com as tools escolhidas, os erros e a análise da tríade, está em [`diario/2026-10-08.md`](diario/2026-10-08.md).
+
 ## Publicação (Render)
 O serviço é descrito no `render.yaml` (spec `specs/004-publicacao/`). Um push na `main` publica a versão nova sozinho. A cada início, a carga roda com `--recriar` antes do servidor subir, então a demonstração sempre começa com os dados de exemplo; trocas de avatar somem quando o serviço reinicia ou dorme.
 
@@ -98,6 +119,7 @@ uv run mypy
 | `src/circuitcrash/domain/` | Regras do jogo e da loja, em Python puro |
 | `src/circuitcrash/dados/` | Contrato `Repositorio`, versão em memória (`memoria.py`) e com banco (`sql.py`, `tabelas.py`, `carga.py`) |
 | `migracoes/` | Migrações do banco (Alembic) |
+| `src/circuitcrash/mcps/` | Servidor MCP: consultas de ranking e partida jogada pelo agente |
 | `src/circuitcrash/login/` | Conversa com o Google no login (OpenID Connect com PKCE, só biblioteca padrão) |
 | `src/circuitcrash/web/` | Templates Jinja2, CSS e conversão do estado para a tela |
 | `src/circuitcrash/app.py` | Rotas |
@@ -105,6 +127,7 @@ uv run mypy
 | `specs/` | Spec, plan e tasks de cada funcionalidade (Spec Kit) |
 | `.specify/memory/constitution.md` | Regras do projeto |
 | `docs/banco-de-dados.md` | Guia para ligar o banco de dados |
+| `diario/` | Diário dos exercícios (servidor MCP) |
 | `prompts/sessoes/` | Exportações das sessões com o agente de IA |
 
 ## Demonstração

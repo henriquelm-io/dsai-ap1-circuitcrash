@@ -13,6 +13,7 @@ dependencies = [
     "sqlalchemy>=2.1.3",
     "alembic>=1.20.0",
     "python-dotenv>=1.2.4",
+    "mcp>=2.3.0",
 ]
 
 [dependency-groups]
@@ -26,6 +27,7 @@ dev = [
 
 [project.scripts]
 circuitcrash = "circuitcrash.__main__:main"
+circuitcrash-mcp = "circuitcrash.mcps.servidor:main"
 
 [project.optional-dependencies]
 postgres = [

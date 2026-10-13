@@ -2,7 +2,7 @@ from datetime import date
 
 import pytest
 
-from circuitcrash.domain import economia
+from circuitcrash.domain import economia, tabuleiro
 from circuitcrash.domain.economia import (
     K_NORMAL,
     LIMITE_DIARIO_FAGULHAS,
@@ -198,3 +198,42 @@ def test_economia_nao_depende_de_dados() -> None:
         codigo = arquivo.read()
     assert "circuitcrash.dados" not in codigo
     assert "datetime" not in codigo
+
+
+# ---------- Partida de demonstração (spec 011) ----------
+
+
+def _demo_terminada(colocar_curva: bool) -> tabuleiro.EstadoPartida:
+    estado = tabuleiro.nova_partida()
+    if colocar_curva:
+        # A curva da mão, à direita da peça em T, liga "Você" à fonte e captura a bateria.
+        assert tabuleiro.jogar_na_casa(estado, 2, 3)
+    while not estado.terminou:
+        tabuleiro.passar(estado)
+    return estado
+
+
+def test_resultado_da_demo_passando_todas_as_vezes() -> None:
+    estado = _demo_terminada(colocar_curva=False)
+    resultado = economia.resultado_da_demo(jogador(), estado, 0)
+    assert resultado == resultado_da_partida(jogador(), RANQUEADA, 3, 4, 0, iguais(9, 6, 3), 0)
+    assert resultado.fagulhas == 15
+
+
+def test_resultado_da_demo_ligado_a_fonte_vence() -> None:
+    estado = _demo_terminada(colocar_curva=True)
+    resultado = economia.resultado_da_demo(jogador(), estado, 0)
+    # 4 + bateria (3) + bônus de energizado no fim (3).
+    assert resultado == resultado_da_partida(jogador(), RANQUEADA, 1, 10, 1, iguais(9, 6, 3), 0)
+    assert resultado.vitoria
+
+
+def test_resultado_da_demo_respeita_o_limite_do_dia() -> None:
+    resultado = economia.resultado_da_demo(jogador(), _demo_terminada(colocar_curva=False), LIMITE_DIARIO_FAGULHAS)
+    assert resultado.fagulhas == 0
+    assert resultado.limite_atingido
+
+
+def test_resultado_da_demo_exige_partida_terminada() -> None:
+    with pytest.raises(ValueError):
+        economia.resultado_da_demo(jogador(), tabuleiro.nova_partida(), 0)

@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "circuitcrash": {
+      "command": "uv",
+      "args": ["run", "circuitcrash-mcp"]
+    }
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "enabledMcpjsonServers": ["circuitcrash"],
+  "permissions": {
+    "allow": [
+      "mcp__circuitcrash__ver_ranking",
+      "mcp__circuitcrash__posicao_do_jogador",
+      "mcp__circuitcrash__ver_partida"
+    ],
+    "ask": [
+      "mcp__circuitcrash__iniciar_partida",
+      "mcp__circuitcrash__jogar_peca",
+      "mcp__circuitcrash__passar_vez"
+    ]
+  }
+}
