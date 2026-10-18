@@ -72,16 +72,18 @@ Sem as credenciais no `.env`, o botão **Entrar com Google** não aparece e o si
 Na versão publicada, o banco volta ao exemplo a cada reinício, então os perfis criados pelo Google somem quando o serviço dorme.
 
 ## Servidor MCP
-O servidor [MCP](https://modelcontextprotocol.io) (Model Context Protocol) `circuitcrash` deixa um agente de IA, como o Claude Code, operar o CircuitCrash: consultar o ranking e jogar a partida de demonstração como um jogador. No fim da partida, Fagulhas e rating são gravados como no site. Ele usa o mesmo banco do site (`DATABASE_URL` do `.env`) e, sem banco, os dados de exemplo em memória. Spec em `specs/011-servidores-mcp/`.
+O servidor [MCP](https://modelcontextprotocol.io) (Model Context Protocol) `circuitcrash` deixa um agente de IA, como o Claude Code, operar o CircuitCrash: consultar o ranking e jogar a partida de demonstração como um jogador. No fim da partida, Fagulhas e rating são gravados como no site. Ele usa o mesmo banco do site (`DATABASE_URL` do `.env`) e, sem banco, os dados de exemplo em memória. Specs em `specs/011-servidores-mcp/` e `specs/012-mcp-publico/` (servidor público).
 
 | Tool | Tipo | Quando o agente usa |
 | --- | --- | --- |
 | `ver_ranking(limite)` | leitura | classificação, do maior rating para o menor (padrão 10, máximo 50) |
 | `posicao_do_jogador(apelido)` | leitura | posição e rating de um jogador, ou quantas partidas faltam para um provisório entrar |
-| `ver_partida()` | leitura | placar, mão, casas ocupadas e jogadas válidas, antes de cada jogada |
-| `iniciar_partida(apelido)` | escrita | começar a partida de demonstração jogando como esse jogador |
-| `jogar_peca(peca, giros, linha, coluna)` | escrita | colocar uma peça da mão, girada, numa casa ligada ao circuito |
-| `passar_vez()` | escrita | quando não há jogada útil |
+| `ver_partida(partida_id)` | leitura | placar, mão, casas ocupadas e jogadas válidas, antes de cada jogada |
+| `iniciar_partida(apelido)` | escrita | começar a partida de demonstração jogando como esse jogador; devolve o `partida_id` |
+| `jogar_peca(peca, giros, linha, coluna, partida_id)` | escrita | colocar uma peça da mão, girada, numa casa ligada ao circuito |
+| `passar_vez(partida_id)` | escrita | quando não há jogada útil |
+
+O `partida_id` identifica a partida entre uma chamada e outra (o protocolo MCP não guarda sessão). No servidor local ele é opcional: vazio, vale a última partida iniciada.
 
 O `.mcp.json` liga o servidor, e o `.claude/settings.json` (versionado) põe as tools de leitura em `allow` (sem perguntar) e as de escrita em `ask` (o Claude Code pede licença a cada jogada).
 
@@ -90,7 +92,25 @@ Para usar no Claude Code:
 2. Abra o Claude Code na pasta do projeto e aceite a confiança na pasta e o servidor `circuitcrash`. Sem aceitar a confiança, o Claude Code ignora o `allow` do projeto e pergunta também nas leituras.
 3. Confira com `/mcp` e peça, por exemplo: "jogue uma partida do CircuitCrash como luma_dev e me diga quanto o rating e as Fagulhas mudaram". Depois confira em `/perfil` como `luma_dev`.
 
-Para rodar o servidor à mão (ele fica esperando mensagens MCP na entrada padrão): `uv run circuitcrash-mcp`. O registro do agente usando o servidor, com as tools escolhidas, os erros e a análise da tríade, está em [`diario/2026-10-08.md`](diario/2026-10-08.md).
+### Servidor público (sem instalar nada)
+O site publicado também serve o MCP em **`https://circuitcrash.onrender.com/mcp`** (Streamable HTTP). Qualquer pessoa conecta o próprio agente sem clonar o repositório. No Claude Code:
+
+```bash
+claude mcp add --transport http circuitcrash https://circuitcrash.onrender.com/mcp
+```
+
+Depois confira com `/mcp` e peça, por exemplo, "quem lidera o ranking do CircuitCrash?" ou "jogue uma partida do CircuitCrash como luma_dev". Outros clientes compatíveis com MCP remoto (como os conectores personalizados do Claude) usam o mesmo endereço.
+
+Diferenças em relação ao servidor local:
+- **Não grava:** no fim da partida, colocação, Fagulhas e rating são calculados e mostrados (`gravado: false`), mas o perfil do jogador não muda. Sem login no MCP, gravar deixaria qualquer pessoa mudar o rating de qualquer jogador.
+- **`partida_id` obrigatório** nas tools da partida, para cada pessoa jogar a sua. Uma partida parada por 30 minutos é descartada, e um reinício do Render apaga as partidas em andamento.
+- **Permissões são de quem conecta:** o `allow`/`ask` versionado vale só dentro desta pasta. Para repetir em outro projeto, ponha as três tools de leitura em `permissions.allow` e as três de escrita em `permissions.ask` do seu `settings.json`, com o prefixo `mcp__circuitcrash__`.
+- O plano gratuito do Render dorme sem uso: a primeira conexão pode levar perto de um minuto.
+
+### Rodar à mão
+Servidor local (fica esperando mensagens MCP na entrada padrão): `uv run circuitcrash-mcp`. O público sobe junto com o site (`uv run python -m circuitcrash`), em `http://127.0.0.1:8000/mcp`.
+
+O registro do agente usando o servidor, com as tools escolhidas, os erros e a análise da tríade, está em [`diario/2026-10-08.md`](diario/2026-10-08.md).
 
 ## Publicação (Render)
 O serviço é descrito no `render.yaml` (spec `specs/004-publicacao/`). Um push na `main` publica a versão nova sozinho. A cada início, a carga roda com `--recriar` antes do servidor subir, então a demonstração sempre começa com os dados de exemplo; trocas de avatar somem quando o serviço reinicia ou dorme.

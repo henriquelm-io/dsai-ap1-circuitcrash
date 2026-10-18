@@ -36,6 +36,7 @@ Rode os quatro de qualidade antes de cada commit.
 - Quando a 0.12.1 (ou uma mais nova) deixar de ser bloqueada, dá para tirar a trava com `uv remove --dev ast-serialize`. Rode `uv run mypy` para confirmar.
 - Em 04/10/2026 as extensões compiladas do SQLAlchemy 2.1.3 e do `psycopg-binary` 3.3.6 carregaram sem bloqueio. Se forem bloqueadas, use `DISABLE_SQLALCHEMY_CEXT_RUNTIME=1` (o SQLAlchemy roda em Python puro).
 - Se o `uv` falhar com `invalid peer certificate: UnknownIssuer`, algum antivírus ou proxy inspeciona o HTTPS: defina `UV_SYSTEM_CERTS=1`.
+- Em 18/10/2026, o Escudo da Web do Avast reescreveu as respostas HTTP locais em JSON (troca `content-length` por `transfer-encoding: chunked` sem refazer o corpo), e um cliente MCP em `http://127.0.0.1:8000/mcp` recebia `peer unexpectedly closed connection`. O site responde certo: os testes de `tests/test_mcp_publico.py` falam com o app dentro do processo. Para conferir por HTTP real, desligue o Escudo da Web por um tempo ou use o endereço do Render.
 
 ## Divisão da dupla
 - Front-end e regras (Pessoa A): `web/`, `domain/`.

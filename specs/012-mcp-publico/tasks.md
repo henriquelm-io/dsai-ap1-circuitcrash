@@ -18,8 +18,8 @@ Refeita em 18/10 depois da correção da spec: a primeira versão guardava a mes
 - [x] T008 [H1] Conferir local: `uv run python -m circuitcrash` e um cliente MCP por HTTP em `http://127.0.0.1:8765/mcp` — tentado em 18/10 e **bloqueado na máquina do Severino**: o Escudo da Web do Avast reescreve as respostas HTTP locais (troca o `content-length` que o app manda por `transfer-encoding: chunked` sem refazer o corpo), e o cliente recebe a conexão cortada. Confirmado registrando as mensagens ASGI: o app manda `content-length` certo, e o cabeçalho trocado chega antes de `date`/`server`, ordem que o uvicorn não usa. Acontece também em `::1`. As respostas em SSE passam. A conferência por HTTP real fica para o Render (T011)
 
 ## Fase 4 — Publicação e acabamento
-- [ ] T009 [P] `README.md`: como conectar ao servidor público e o que muda em relação ao local; `SPEC/2026-10-18-mcp-publico.md` com o status
-- [ ] T010 `pytest`, `ruff check`, `ruff format --check` e `mypy` sem erros
+- [x] T009 [P] `README.md`: como conectar ao servidor público e o que muda em relação ao local; `SPEC/2026-10-18-mcp-publico.md` com o status
+- [x] T010 `pytest`, `ruff check`, `ruff format --check` e `mypy` sem erros
 - [ ] T011 Depois do merge e do deploy: conectar em `https://circuitcrash.onrender.com/mcp`, consultar o ranking e jogar uma partida até o fim; conferir que `/perfil` do jogador não mudou
 
 ## Dependências

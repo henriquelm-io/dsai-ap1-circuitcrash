@@ -1,6 +1,6 @@
 # Spec 012 — Servidor MCP público do CircuitCrash
 
-**Branch:** `012-mcp-publico` · **Status:** em implementação · **Criada em:** 18/10/2026 · **Dono:** Severino · **Origem:** [SPEC/2026-10-18-mcp-publico.md](../../SPEC/2026-10-18-mcp-publico.md)
+**Branch:** `012-mcp-publico` · **Status:** implementada em 18/10/2026, aguardando revisão e a conferência no Render (T011) · **Criada em:** 18/10/2026 · **Dono:** Severino · **Origem:** [SPEC/2026-10-18-mcp-publico.md](../../SPEC/2026-10-18-mcp-publico.md)
 
 ## Contexto
 A spec 011 entregou o servidor MCP `circuitcrash` só por stdio: quem quer usá-lo precisa clonar o repositório e rodar `uv run circuitcrash-mcp`. Esta spec publica o mesmo servidor por Streamable HTTP, dentro do site que já roda no Render (spec 004), para pessoas de fora conectarem pelo endereço.
