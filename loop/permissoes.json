@@ -1,0 +1,36 @@
+{
+  "permissions": {
+    "allow": [
+      "Read",
+      "Glob",
+      "Grep",
+      "Edit(./README.md)",
+      "Bash(uv run python loop/conferir.py)",
+      "Bash(uv run python loop/conferir.py --cloc)",
+      "Bash(uv run pytest:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(date:*)"
+    ],
+    "deny": [
+      "Edit(./src/**)",
+      "Edit(./tests/**)",
+      "Edit(./migracoes/**)",
+      "Edit(./specs/**)",
+      "Edit(./SPEC/**)",
+      "Edit(./prompts/**)",
+      "Edit(./diario/**)",
+      "Edit(./loop/**)",
+      "Edit(./.claude/**)",
+      "Edit(./pyproject.toml)",
+      "Edit(./uv.lock)",
+      "Edit(./render.yaml)",
+      "Edit(./.mcp.json)",
+      "Bash(perl:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(git checkout:*)",
+      "Bash(git reset:*)"
+    ]
+  }
+}

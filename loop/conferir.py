@@ -4,12 +4,14 @@ Confere se a seção "Contagem de linhas" do README está igual ao cloc de agora
 Não muda nenhum arquivo.
 
     CLOC_PL=/caminho/cloc-2.10.pl uv run python loop/conferir.py
+    CLOC_PL=/caminho/cloc-2.10.pl uv run python loop/conferir.py --cloc   # só mostra as tabelas do cloc
 
 Saída: 0 = passou; 1 = não passou, tentar de novo; 2 = escalar para a dupla.
 """
 
 from __future__ import annotations
 
+import io
 import os
 import re
 import subprocess
@@ -124,11 +126,30 @@ def avaliar(
     return (TENTAR_DE_NOVO if problemas else PASSOU), problemas
 
 
+def mostrar_cloc(cloc_codigo: str, cloc_testes: str) -> str:
+    """As duas tabelas do cloc e as somas, prontas para copiar para o README."""
+    codigo, testes = soma(cloc_codigo), soma(cloc_testes)
+    linhas = [
+        f"Código (sem tests/): {codigo}",
+        f"Testes (tests/): {testes}",
+        f"Total: {codigo + testes}",
+        "",
+        "### Código",
+        tabela_do_cloc(cloc_codigo),
+        "",
+        "### Testes",
+        tabela_do_cloc(cloc_testes),
+    ]
+    return "\n".join(linhas)
+
+
 def _rodar(*comando: str) -> str:
     return subprocess.run(comando, cwd=RAIZ, capture_output=True, text=True, encoding="utf-8", check=True).stdout
 
 
 def main() -> int:
+    if isinstance(sys.stdout, io.TextIOWrapper):
+        sys.stdout.reconfigure(encoding="utf-8")  # o console do Windows usa cp1252
     cloc_pl = os.environ.get("CLOC_PL", "")
     if not cloc_pl or not Path(cloc_pl).is_file():
         print("ESCALAR: defina CLOC_PL com o caminho do cloc-2.10.pl (o cloc não está instalado).")
@@ -136,6 +157,9 @@ def main() -> int:
     try:
         cloc_codigo = _rodar("perl", cloc_pl, ".", "--vcs=git", f"--exclude-dir={EXCLUIR_DIR},tests", *FILTROS)
         cloc_testes = _rodar("perl", cloc_pl, "tests", "--vcs=git", f"--exclude-dir={EXCLUIR_DIR}", *FILTROS)
+        if "--cloc" in sys.argv[1:]:
+            print(mostrar_cloc(cloc_codigo, cloc_testes))
+            return PASSOU
         porcelana = _rodar("git", "status", "--porcelain")
         readme_antes = _rodar("git", "show", "HEAD:README.md")
     except (OSError, subprocess.CalledProcessError) as erro:

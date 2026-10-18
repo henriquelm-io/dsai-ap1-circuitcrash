@@ -14,7 +14,7 @@ A pasta `loop/` guarda o desenho e o rastro do loop: `PROMPT.md` (o que o agente
 | Arquivos mudados | `git status --porcelain` (rastreados e novos); só `README.md` é aceito |
 | Queda | Tabela de `git show HEAD:README.md` contra o `cloc` de agora |
 | Data | `Contado em DD/MM/AAAA` igual à data local de hoje |
-| Permissões da volta | `allow`: `Read`, `Glob`, `Grep`, `Edit(./README.md)`, `Bash(perl:*)`, `Bash(git status:*)`, `Bash(git diff:*)`, `Bash(git log:*)`, `Bash(uv run python loop/conferir.py:*)`, `Bash(uv run pytest:*)`. `deny`: `Bash(git commit:*)`, `Bash(git push:*)`, `Edit` e `Write` em `loop/`, `src/`, `tests/` e o resto da lista da spec. No `-p`, o que não está em `allow` é negado sem perguntar |
+| Permissões da volta | `allow`: `Read`, `Glob`, `Grep`, `Edit(./README.md)`, `uv run python loop/conferir.py` (com e sem `--cloc`), `Bash(uv run pytest:*)`, `Bash(git status:*)`, `Bash(git diff:*)`. O agente não roda o `perl`: `conferir.py --cloc` mostra as tabelas do `cloc` (com `perl -e` daria para escrever em qualquer arquivo). `deny`: `Bash(perl:*)`, `Bash(git commit:*)`, `Bash(git push:*)`, `checkout`, `reset`, `Edit` e `Write` em `loop/`, `src/`, `tests/` e o resto da lista da spec. No `-p`, o que não está em `allow` é negado sem perguntar |
 | Nome do arquivo de permissões | `permissoes.json`: o `.gitignore` ignora `settings.json` |
 | Testes | `tests/test_loop_conferir.py` importa `loop/conferir.py` pelo caminho (`importlib`) e testa as funções puras com READMEs de exemplo, sem rodar o `cloc` |
 

@@ -7,9 +7,9 @@
 - [x] T002 [H2] `loop/conferir.py`: funções puras + `main` que roda o `cloc` por `CLOC_PL`, `git status` e `git show HEAD:README.md`; saídas 0, 1 e 2; T001 passa; `mypy` também no `conferir.py`
 
 ## Fase 2 — Desenho do loop (H1)
-- [ ] T003 [H1] `loop/PROMPT.md`: tarefa, gatilho e justificativa, critério de parada, quando parar e chamar a dupla, o que não tocar e como se conferir
-- [ ] T004 [H1] `loop/permissoes.json`: allow e deny da volta
-- [ ] T005 [H1] `loop/ESTADO.md` com o modelo de entrada; commit do loop antes da primeira volta
+- [x] T003 [H1] `loop/PROMPT.md`: tarefa, gatilho e justificativa, critério de parada, quando parar e chamar a dupla, o que não tocar e como se conferir
+- [x] T004 [H1] `loop/permissoes.json`: allow e deny da volta
+- [x] T005 [H1] `loop/ESTADO.md` com o modelo de entrada; commit do loop antes da primeira volta
 
 ## Fase 3 — Voltas (H3)
 - [ ] T006 [H3] Volta 1: `claude -p` numa sessão nova; porteiro roda `conferir.py` e `pytest`, anota em `ESTADO.md` e decide

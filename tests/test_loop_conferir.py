@@ -160,3 +160,11 @@ def test_secao_ausente_escala() -> None:
     codigo, problemas = _avaliar("# CircuitCrash\n\nSem contagem.\n")
     assert codigo == 2
     assert any("Contagem de linhas" in p for p in problemas)
+
+
+def test_mostrar_cloc_traz_as_somas_e_as_tabelas() -> None:
+    texto = conferir.mostrar_cloc(CLOC_CODIGO, CLOC_TESTES)
+    assert "Código (sem tests/): 3000" in texto
+    assert "Total: 4230" in texto
+    assert conferir.tabela_do_cloc(CLOC_TESTES) in texto
+    assert "github.com" not in texto
