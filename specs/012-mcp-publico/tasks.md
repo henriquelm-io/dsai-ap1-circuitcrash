@@ -3,8 +3,8 @@
 **Entrada:** [spec.md](spec.md), [plan.md](plan.md). `[P]` = pode ser feita em paralelo. `[H#]` = história atendida.
 
 ## Fase 1 — Resultado sem gravar (H2)
-- [ ] T001 [H2] `tests/test_mcp_partida.py`: com `Mesa(grava=False)`, o fim traz o resultado com `gravado: false`, a mensagem diz que não grava e o repositório não muda; com a mesa padrão, `gravado: true`
-- [ ] T002 [H2] `mcps/partida.py`: `Mesa.grava`, campo `gravado` e mensagem do fim; T001 passa
+- [x] T001 [H2] `tests/test_mcp_partida.py`: com `Mesa(grava=False)`, o fim traz o resultado com `gravado: false`, a mensagem diz que não grava e o repositório não muda; com a mesa padrão, `gravado: true`
+- [x] T002 [H2] `mcps/partida.py`: `Mesa.grava`, campo `gravado` e mensagem do fim; T001 passa
 
 ## Fase 2 — Uma mesa por sessão (H3)
 - [ ] T003 [H3] `tests/test_mcp_servidor.py`: dois clientes no mesmo servidor têm partidas separadas; as instruções e a docstring de `iniciar_partida` no modo público dizem que não grava; uma partida inteira sem gravar não muda o repositório

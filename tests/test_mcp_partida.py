@@ -177,3 +177,35 @@ def test_respostas_nao_trazem_email(repo: Repositorio) -> None:
     mesa = _iniciada(repo)
     textos = str(partida.ver(mesa)) + str(_ate_o_fim(repo, mesa))
     assert "@" not in textos
+
+
+def test_fim_marca_o_resultado_como_gravado(repo: Repositorio) -> None:
+    resultado = _ate_o_fim(repo, _iniciada(repo))["resultado"]
+    assert resultado is not None
+    assert resultado["gravado"]
+
+
+def test_mesa_que_nao_grava_mostra_o_resultado_sem_mudar_o_repositorio(repo: Repositorio) -> None:
+    # Servidor público (spec 012): calcula e mostra, mas não grava.
+    lido = repo.obter_jogador("novato")
+    assert lido is not None
+    antes = dataclasses.replace(lido)
+    recentes = len(repo.partidas_recentes("novato"))
+    mesa = Mesa(grava=False)
+    partida.iniciar(repo, mesa, "luma_dev")
+    partida.jogar(repo, mesa, 0, 0, 2, 3)
+    resposta = _ate_o_fim(repo, mesa)
+
+    resultado = resposta["resultado"]
+    assert resultado is not None
+    assert not resultado["gravado"]
+    assert resultado["colocacao"] == 1
+    assert resultado["fagulhas"] == 40
+    assert resultado["rating_depois"] == antes.rating + resultado["variacao_rating"]
+    assert "não grava" in resposta["mensagem"]
+    assert "não grava" in partida.ver(mesa)["mensagem"]
+
+    depois = repo.obter_jogador("novato")
+    assert depois is not None
+    assert (depois.partidas, depois.fagulhas, depois.rating) == (antes.partidas, antes.fagulhas, antes.rating)
+    assert len(repo.partidas_recentes("novato")) == recentes

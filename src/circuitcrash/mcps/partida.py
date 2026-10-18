@@ -22,8 +22,12 @@ SEM_PARTIDA = "Nenhuma partida em andamento. Use iniciar_partida com o apelido d
 
 @dataclass
 class Mesa:
-    """A partida em andamento no servidor (uma por vez)."""
+    """A partida em andamento de uma sessão MCP.
 
+    Com grava=False (servidor público, spec 012), o resultado é calculado e mostrado, mas não gravado.
+    """
+
+    grava: bool = True
     estado: EstadoPartida | None = None
     jogador_id: str | None = None
     apelido: str = ""
@@ -69,6 +73,7 @@ class ResultadoGravado(TypedDict):
     rating_antes: int
     variacao_rating: int
     rating_depois: int
+    gravado: bool
 
 
 class RespostaPartida(TypedDict):
@@ -160,6 +165,7 @@ def _resposta(mesa: Mesa, aceita: bool, mensagem: str | None = None) -> Resposta
             "rating_antes": r.rating_antes,
             "variacao_rating": r.variacao_rating,
             "rating_depois": r.rating_depois,
+            "gravado": mesa.grava,
         }
     return {
         "ativa": True,
@@ -199,14 +205,15 @@ def _resposta(mesa: Mesa, aceita: bool, mensagem: str | None = None) -> Resposta
 
 
 def _gravar_se_terminou(repo: Repositorio, mesa: Mesa) -> None:
-    """Grava o resultado uma única vez, como a tela /partida."""
+    """Grava o resultado uma única vez, como a tela /partida. Sem gravar, só calcula."""
     if mesa.estado is None or not mesa.estado.terminou or mesa.resultado is not None or mesa.jogador_id is None:
         return
     jogador = repo.obter_jogador(mesa.jogador_id)
     if jogador is None:
         return
     resultado = economia.resultado_da_demo(jogador, mesa.estado, repo.fagulhas_ganhas_hoje(jogador.id))
-    repo.registrar_partida(jogador.id, resultado)
+    if mesa.grava:
+        repo.registrar_partida(jogador.id, resultado)
     mesa.resultado = resultado
 
 
@@ -216,9 +223,11 @@ def _mensagem_do_fim(mesa: Mesa) -> str:
         return "Fim de partida!"
     sinal = "+" if r.variacao_rating >= 0 else ""
     aviso = " (limite diário de Fagulhas atingido)" if r.limite_atingido else ""
+    gravacao = "" if mesa.grava else " Resultado não gravado: o servidor público não grava partidas."
     return (
         f"Fim de partida! {mesa.apelido} ficou em {r.colocacao}º com {r.pontos} pontos: "
         f"+{r.fagulhas} Fagulhas{aviso}, rating {r.rating_antes} → {r.rating_depois} ({sinal}{r.variacao_rating})."
+        f"{gravacao}"
     )
 
 
