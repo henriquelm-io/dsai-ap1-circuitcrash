@@ -1,6 +1,6 @@
 # Servidor MCP público do CircuitCrash
 
-**Data:** 18/10/2026 · **Status:** implementada em 18/10/2026, aguardando revisão e a conferência no Render · **Branch:** `012-mcp-publico` · **Detalhes:** `specs/012-mcp-publico/`
+**Data:** 18/10/2026 · **Status:** implementada, mesclada (PR #12) e conferida no Render em 18/10/2026 · **Branch:** `012-mcp-publico` · **Detalhes:** `specs/012-mcp-publico/`
 
 ## O quê
 O servidor MCP `circuitcrash` (spec 011) passa a ser publicado também na internet, junto do site no Render, em `https://circuitcrash.onrender.com/mcp` (transporte Streamable HTTP). Qualquer pessoa liga o próprio agente a ele sem clonar o repositório, por exemplo no Claude Code:

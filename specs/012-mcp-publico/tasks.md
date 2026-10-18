@@ -20,7 +20,7 @@ Refeita em 18/10 depois da correção da spec: a primeira versão guardava a mes
 ## Fase 4 — Publicação e acabamento
 - [x] T009 [P] `README.md`: como conectar ao servidor público e o que muda em relação ao local; `SPEC/2026-10-18-mcp-publico.md` com o status
 - [x] T010 `pytest`, `ruff check`, `ruff format --check` e `mypy` sem erros
-- [ ] T011 Depois do merge e do deploy: conectar em `https://circuitcrash.onrender.com/mcp`, consultar o ranking e jogar uma partida até o fim; conferir que `/perfil` do jogador não mudou
+- [x] T011 Depois do merge e do deploy: conectar em `https://circuitcrash.onrender.com/mcp`, consultar o ranking e jogar uma partida até o fim; conferir que `/perfil` do jogador não mudou — feito em 18/10, depois do merge do PR #12. Pelo cliente do SDK (`mcp` 2.3, HTTPS): seis tools; top 3 igual a `/ranking` (ninacircuit 1611, lia.ohm 1530, voltz_br 1482); `iniciar_partida` como `voltz_br` devolveu `partida_id`; `ver_partida` sem id respondeu pedindo o id, sem erro; partida até o fim: 1º, 10 pontos, +40 Fagulhas, rating 1482 → 1487 calculado, `gravado: false`; uma conexão nova achou a partida pelo id. `posicao_do_jogador` antes e depois (os mesmos dados de `/perfil` e `/ranking`): 3º, rating 1482, 48 partidas, sem mudança. Pelo Claude Code 2.1.302 (`claude -p` com `--mcp-config` só com o endereço do Render): conectou, chamou `ver_ranking` e `posicao_do_jogador` e respondeu com o mesmo ranking. Pelo HTTPS do Render, o Avast não atrapalhou
 
 ## Dependências
 Fase 1 → Fase 2 → Fase 3 → Fase 4. Em cada fase, os testes vêm antes da implementação. T010 roda também antes de cada commit.
