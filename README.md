@@ -185,7 +185,7 @@ Cada funcionalidade nasce como `spec.md` → `plan.md` → `tasks.md` em `specs/
 - As sessões exportadas do Claude Code estão em `prompts/sessoes/`.
 
 ## Contagem de linhas
-Contado em 18/10/2026, às 19:08, com o [cloc](https://github.com/AlDanial/cloc) 2.10 e o comando do enunciado da AP1, que exclui `prompts/`, dependências, arquivos de lock e Markdown, JSON, YAML, CSV, Text e SVG:
+Contado em 18/10/2026, às 19:24, com o [cloc](https://github.com/AlDanial/cloc) 2.10 e o comando do enunciado da AP1, que exclui `prompts/`, dependências, arquivos de lock e Markdown, JSON, YAML, CSV, Text e SVG:
 
 ```bash
 cloc . --vcs=git   --exclude-dir=node_modules,vendor,dist,build,prompts   --exclude-lang=Markdown,JSON,YAML,CSV,Text,SVG   --not-match-f='(lock|\.min\.)'
@@ -195,23 +195,23 @@ Os testes aparecem separados: a tabela de código usa o mesmo comando com `tests
 
 | Parte | Linhas de código |
 | --- | --- |
-| Código (sem `tests/`) | 3.460 |
-| Testes (`tests/`) | 1.331 |
-| **Total** | **4.791** |
+| Código (sem `tests/`) | 3.601 |
+| Testes (`tests/`) | 1.523 |
+| **Total** | **5.124** |
 
 ### Código
 ```
 -------------------------------------------------------------------------------
 Language                     files          blank        comment           code
 -------------------------------------------------------------------------------
-Python                          24            601            243           2523
+Python                          24            617            244           2664
 HTML                             9             21              0            522
 CSS                              1             20             10            315
 TOML                             1              9              0             50
 INI                              1              9              0             33
 Mako                             1              7              0             17
 -------------------------------------------------------------------------------
-SUM:                            37            667            253           3460
+SUM:                            37            683            254           3601
 -------------------------------------------------------------------------------
 ```
 
@@ -220,8 +220,8 @@ SUM:                            37            667            253           3460
 -------------------------------------------------------------------------------
 Language                     files          blank        comment           code
 -------------------------------------------------------------------------------
-Python                          14            529             68           1331
+Python                          15            578             74           1523
 -------------------------------------------------------------------------------
-SUM:                            14            529             68           1331
+SUM:                            15            578             74           1523
 -------------------------------------------------------------------------------
 ```
