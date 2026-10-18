@@ -3,8 +3,8 @@
 **Entrada:** [spec.md](spec.md), [plan.md](plan.md). `[P]` = pode ser feita em paralelo. `[H#]` = história atendida.
 
 ## Fase 1 — Porteiro (H2)
-- [ ] T001 [H2] `tests/test_loop_conferir.py`: leitura da seção (tabela e blocos), comparação com saídas de `cloc` de exemplo (passou, número errado, bloco errado, data velha), arquivos mudados além do README, queda na contagem e seção ausente
-- [ ] T002 [H2] `loop/conferir.py`: funções puras + `main` que roda o `cloc` por `CLOC_PL`, `git status` e `git show HEAD:README.md`; saídas 0, 1 e 2; T001 passa; `mypy` também no `conferir.py`
+- [x] T001 [H2] `tests/test_loop_conferir.py`: leitura da seção (tabela e blocos), comparação com saídas de `cloc` de exemplo (passou, número errado, bloco errado, data velha), arquivos mudados além do README, queda na contagem e seção ausente
+- [x] T002 [H2] `loop/conferir.py`: funções puras + `main` que roda o `cloc` por `CLOC_PL`, `git status` e `git show HEAD:README.md`; saídas 0, 1 e 2; T001 passa; `mypy` também no `conferir.py`
 
 ## Fase 2 — Desenho do loop (H1)
 - [ ] T003 [H1] `loop/PROMPT.md`: tarefa, gatilho e justificativa, critério de parada, quando parar e chamar a dupla, o que não tocar e como se conferir
