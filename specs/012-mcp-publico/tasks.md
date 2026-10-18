@@ -13,9 +13,9 @@ Refeita em 18/10 depois da correção da spec: a primeira versão guardava a mes
 - [x] T005 [H3] `mcps/partida.py`: `Mesa.partida_id` e `Mesas`; `mcps/servidor.py`: `criar_servidor(repo, publico=False)`, `partida_id` nas tools e instruções por modo; T003 e T004 passam
 
 ## Fase 3 — `/mcp` no site (H1)
-- [ ] T006 [H1] `tests/test_mcp_publico.py`: com o `lifespan` ligado, um cliente MCP por HTTP em `/mcp` lista as seis tools, consulta o ranking e joga pelo `partida_id`; `/health` continua respondendo
-- [ ] T007 [H1] `app.py`: servidor público sobre o repositório do site, rota `/mcp` (`stateless_http`) e `lifespan`; T006 e `tests/test_paginas.py` passam
-- [ ] T008 [H1] Conferir local: `uv run python -m circuitcrash` e `claude mcp add --transport http` para `http://127.0.0.1:8000/mcp`, com ranking e uma partida
+- [x] T006 [H1] `tests/test_mcp_publico.py`: com o `lifespan` ligado, um cliente MCP por HTTP em `/mcp` lista as seis tools, consulta o ranking e joga pelo `partida_id`; `/health` continua respondendo
+- [x] T007 [H1] `app.py`: servidor público sobre o repositório do site, rota `/mcp` (`stateless_http`) e `lifespan`; T006 e `tests/test_paginas.py` passam
+- [x] T008 [H1] Conferir local: `uv run python -m circuitcrash` e um cliente MCP por HTTP em `http://127.0.0.1:8765/mcp` — tentado em 18/10 e **bloqueado na máquina do Severino**: o Escudo da Web do Avast reescreve as respostas HTTP locais (troca o `content-length` que o app manda por `transfer-encoding: chunked` sem refazer o corpo), e o cliente recebe a conexão cortada. Confirmado registrando as mensagens ASGI: o app manda `content-length` certo, e o cabeçalho trocado chega antes de `date`/`server`, ordem que o uvicorn não usa. Acontece também em `::1`. As respostas em SSE passam. A conferência por HTTP real fica para o Render (T011)
 
 ## Fase 4 — Publicação e acabamento
 - [ ] T009 [P] `README.md`: como conectar ao servidor público e o que muda em relação ao local; `SPEC/2026-10-18-mcp-publico.md` com o status

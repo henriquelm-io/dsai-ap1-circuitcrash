@@ -6,9 +6,11 @@ rotas podem migrar para ele sem reescrever as telas.
 
 from __future__ import annotations
 
+import contextlib
 import os
 import secrets
 import time
+from collections.abc import AsyncIterator
 from datetime import date
 from pathlib import Path
 from typing import Any
@@ -29,6 +31,7 @@ from circuitcrash.domain import conta, economia, loja, tabuleiro
 from circuitcrash.domain.economia import LIMITE_DIARIO_FAGULHAS, RECOMPENSA_COLOCACAO
 from circuitcrash.domain.modelos import PRECOS, Jogador, Raridade, ResultadoPartida
 from circuitcrash.login import google
+from circuitcrash.mcps import servidor as servidor_mcp
 from circuitcrash.web import visao
 
 AQUI = Path(__file__).parent
@@ -414,10 +417,26 @@ def criar_app(
         Route("/health", saude),
         Mount("/static", app=StaticFiles(directory=str(AQUI / "web" / "static")), name="static"),
     ]
-    chave = os.environ.get("SECRET_KEY") or secrets.token_hex(32)
-    app = Starlette(routes=rotas, middleware=[Middleware(SessionMiddleware, secret_key=chave, same_site="lax")])
     # Sem repositório passado: banco se DATABASE_URL estiver preenchida, senão dados em memória.
-    app.state.repo = repo or criar_repositorio(url_do_banco())
+    dados = repo or criar_repositorio(url_do_banco())
+
+    # Servidor MCP público em /mcp (spec 012): mesmo banco, sem gravar partidas, sem sessão.
+    mcp = servidor_mcp.criar_servidor(dados, publico=True)
+    mcp_app = mcp.streamable_http_app(streamable_http_path="/mcp", stateless_http=True, host="0.0.0.0")
+    rotas.extend(mcp_app.routes)
+
+    @contextlib.asynccontextmanager
+    async def ciclo_de_vida(_app: Starlette) -> AsyncIterator[None]:
+        async with mcp.session_manager.run():
+            yield
+
+    chave = os.environ.get("SECRET_KEY") or secrets.token_hex(32)
+    app = Starlette(
+        routes=rotas,
+        middleware=[Middleware(SessionMiddleware, secret_key=chave, same_site="lax")],
+        lifespan=ciclo_de_vida,
+    )
+    app.state.repo = dados
     # Sem configuração passada: GOOGLE_CLIENT_ID e GOOGLE_CLIENT_SECRET; vazias, o login fica desligado.
     app.state.google = google_config or google.ConfigGoogle.do_ambiente()
     app.state.trocar_codigo = trocar_codigo or google.trocar_codigo
