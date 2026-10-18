@@ -8,6 +8,10 @@ grava o resultado uma vez, no fim.
 from __future__ import annotations
 
 import copy
+import secrets
+import time
+from collections import OrderedDict
+from collections.abc import Callable
 from dataclasses import dataclass
 from typing import TypedDict
 
@@ -18,16 +22,85 @@ from circuitcrash.domain.tabuleiro import EstadoPartida, TipoCasa
 from circuitcrash.mcps.comum import buscar_por_apelido
 
 SEM_PARTIDA = "Nenhuma partida em andamento. Use iniciar_partida com o apelido de um jogador."
+SEM_ID = "Informe o partida_id que iniciar_partida devolveu. Sem partida, use iniciar_partida."
+VALIDADE_MINUTOS = 30
+LIMITE_MESAS = 200
 
 
 @dataclass
 class Mesa:
-    """A partida em andamento no servidor (uma por vez)."""
+    """Uma partida, achada pelo partida_id.
 
+    Com grava=False (servidor público, spec 012), o resultado é calculado e mostrado, mas não gravado.
+    """
+
+    grava: bool = True
+    partida_id: str = ""
     estado: EstadoPartida | None = None
     jogador_id: str | None = None
     apelido: str = ""
     resultado: ResultadoPartida | None = None
+
+
+class Mesas:
+    """As partidas guardadas no servidor, por partida_id (spec 012).
+
+    O protocolo MCP do SDK não tem sessão, então o agente leva o partida_id de uma chamada para outra.
+    No modo local, partida_id vazio é a última partida iniciada; no público, o id é obrigatório.
+    Partidas paradas por VALIDADE_MINUTOS somem, e só ficam as LIMITE_MESAS usadas há menos tempo.
+    """
+
+    def __init__(
+        self,
+        *,
+        publico: bool = False,
+        validade: float = VALIDADE_MINUTOS * 60,
+        limite: int = LIMITE_MESAS,
+        relogio: Callable[[], float] = time.monotonic,
+    ) -> None:
+        self.publico = publico
+        self._validade = validade
+        self._limite = limite
+        self._relogio = relogio
+        self._mesas: OrderedDict[str, tuple[Mesa, float]] = OrderedDict()  # da usada há mais tempo à mais recente
+        self._ultima = ""
+
+    def _limpar(self) -> None:
+        agora = self._relogio()
+        while self._mesas:
+            partida_id, (_, uso) = next(iter(self._mesas.items()))
+            if agora - uso < self._validade and len(self._mesas) <= self._limite:
+                break
+            del self._mesas[partida_id]
+
+    def nova(self) -> Mesa:
+        mesa = Mesa(grava=not self.publico, partida_id=secrets.token_urlsafe(9))
+        self._mesas[mesa.partida_id] = (mesa, self._relogio())
+        self._ultima = mesa.partida_id
+        self._limpar()
+        return mesa
+
+    def descartar(self, mesa: Mesa) -> None:
+        self._mesas.pop(mesa.partida_id, None)
+
+    def obter(self, partida_id: str) -> Mesa | None:
+        self._limpar()
+        partida_id = partida_id.strip() or ("" if self.publico else self._ultima)
+        guardada = self._mesas.get(partida_id)
+        if guardada is None:
+            return None
+        self._mesas[partida_id] = (guardada[0], self._relogio())
+        self._mesas.move_to_end(partida_id)
+        return guardada[0]
+
+    def nao_encontrada(self, partida_id: str) -> RespostaPartida:
+        """Resposta para quando obter não acha a partida."""
+        if partida_id.strip():
+            return _sem_partida(
+                f"Partida {partida_id.strip()!r} não encontrada: ela ficou parada mais de {VALIDADE_MINUTOS} "
+                "minutos, o servidor reiniciou ou o id está errado. Use iniciar_partida para jogar outra."
+            )
+        return _sem_partida(SEM_ID if self.publico else SEM_PARTIDA)
 
 
 class Placar(TypedDict):
@@ -69,10 +142,12 @@ class ResultadoGravado(TypedDict):
     rating_antes: int
     variacao_rating: int
     rating_depois: int
+    gravado: bool
 
 
 class RespostaPartida(TypedDict):
     ativa: bool
+    partida_id: str
     apelido: str
     aceita: bool
     mensagem: str
@@ -94,6 +169,7 @@ def _nome(indice: int | None) -> str | None:
 def _sem_partida(mensagem: str = SEM_PARTIDA) -> RespostaPartida:
     return {
         "ativa": False,
+        "partida_id": "",
         "apelido": "",
         "aceita": False,
         "mensagem": mensagem,
@@ -160,9 +236,11 @@ def _resposta(mesa: Mesa, aceita: bool, mensagem: str | None = None) -> Resposta
             "rating_antes": r.rating_antes,
             "variacao_rating": r.variacao_rating,
             "rating_depois": r.rating_depois,
+            "gravado": mesa.grava,
         }
     return {
         "ativa": True,
+        "partida_id": mesa.partida_id,
         "apelido": mesa.apelido,
         "aceita": aceita,
         "mensagem": mensagem or estado.mensagem,
@@ -199,14 +277,15 @@ def _resposta(mesa: Mesa, aceita: bool, mensagem: str | None = None) -> Resposta
 
 
 def _gravar_se_terminou(repo: Repositorio, mesa: Mesa) -> None:
-    """Grava o resultado uma única vez, como a tela /partida."""
+    """Grava o resultado uma única vez, como a tela /partida. Sem gravar, só calcula."""
     if mesa.estado is None or not mesa.estado.terminou or mesa.resultado is not None or mesa.jogador_id is None:
         return
     jogador = repo.obter_jogador(mesa.jogador_id)
     if jogador is None:
         return
     resultado = economia.resultado_da_demo(jogador, mesa.estado, repo.fagulhas_ganhas_hoje(jogador.id))
-    repo.registrar_partida(jogador.id, resultado)
+    if mesa.grava:
+        repo.registrar_partida(jogador.id, resultado)
     mesa.resultado = resultado
 
 
@@ -216,9 +295,11 @@ def _mensagem_do_fim(mesa: Mesa) -> str:
         return "Fim de partida!"
     sinal = "+" if r.variacao_rating >= 0 else ""
     aviso = " (limite diário de Fagulhas atingido)" if r.limite_atingido else ""
+    gravacao = "" if mesa.grava else " Resultado não gravado: o servidor público não grava partidas."
     return (
         f"Fim de partida! {mesa.apelido} ficou em {r.colocacao}º com {r.pontos} pontos: "
         f"+{r.fagulhas} Fagulhas{aviso}, rating {r.rating_antes} → {r.rating_depois} ({sinal}{r.variacao_rating})."
+        f"{gravacao}"
     )
 
 
@@ -230,8 +311,11 @@ def iniciar(repo: Repositorio, mesa: Mesa, apelido: str) -> RespostaPartida:
     mesa.jogador_id = jogador.id
     mesa.apelido = jogador.apelido
     mesa.resultado = None
+    guardar = f" Passe partida_id={mesa.partida_id!r} nas próximas chamadas." if mesa.partida_id else ""
     return _resposta(
-        mesa, True, f"Partida iniciada: você joga como {jogador.apelido}, na base (0,0). {mesa.estado.mensagem}"
+        mesa,
+        True,
+        f"Partida iniciada: você joga como {jogador.apelido}, na base (0,0).{guardar} {mesa.estado.mensagem}",
     )
 
 

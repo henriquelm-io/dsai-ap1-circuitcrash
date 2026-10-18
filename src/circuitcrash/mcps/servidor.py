@@ -1,8 +1,9 @@
-"""Servidor MCP do CircuitCrash: ranking e partida de demonstração (spec 011).
+"""Servidor MCP do CircuitCrash: ranking e partida de demonstração (specs 011 e 012).
 
 Rode com: uv run circuitcrash-mcp (o Claude Code inicia sozinho pelo .mcp.json).
 Leitura: ver_ranking, posicao_do_jogador, ver_partida. Escrita: iniciar_partida,
 jogar_peca, passar_vez. As permissões (allow/ask) ficam em .claude/settings.json.
+O site publica o mesmo servidor em /mcp, sem gravar as partidas e com partida_id (spec 012).
 """
 
 from __future__ import annotations
@@ -17,10 +18,10 @@ from circuitcrash.domain import tabuleiro
 from circuitcrash.domain.modelos import PARTIDAS_PARA_RANKING
 from circuitcrash.mcps import partida, ranking
 from circuitcrash.mcps.comum import ESCRITA, SO_LEITURA, repositorio_do_ambiente
-from circuitcrash.mcps.partida import Mesa, RespostaPartida
+from circuitcrash.mcps.partida import Mesas, RespostaPartida
 from circuitcrash.mcps.ranking import Posicao, Ranking
 
-INSTRUCOES = f"""CircuitCrash: puzzle de circuitos por turnos para 4 jogadores.
+_REGRAS = f"""CircuitCrash: puzzle de circuitos por turnos para 4 jogadores.
 Ranking: só entram jogadores com pelo menos {PARTIDAS_PARA_RANKING} partidas.
 Partida de demonstração: tabuleiro {tabuleiro.TAMANHO}x{tabuleiro.TAMANHO}, linhas e colunas de 0 a \
 {tabuleiro.TAMANHO - 1}. Você joga como "Você", com base em (0,0); a fonte de energia fica em (3,3).
@@ -30,15 +31,45 @@ circuito. Objetivos (bateria 3, lâmpada 2, núcleo 5 pontos) são capturados qu
 chega a eles; os pontos de um objetivo, uma vez ganhos, não se perdem. A partida começa na rodada 6 e termina \
 depois da rodada {tabuleiro.MAX_RODADAS}; se "Você" terminar ligado à fonte, ganha mais {tabuleiro.BONUS_ENERGIZADO} \
 pontos (o bônus é só seu). Na demonstração, Lia, Bruno e Kai não jogam: o tabuleiro deles fica parado e só as suas \
-jogadas mudam o placar. No fim, Fagulhas e rating são gravados para o jogador.
-Fluxo: iniciar_partida → ver_partida → jogar_peca ou passar_vez, até terminar."""
+jogadas mudam o placar."""
+_GRAVA = "No fim, Fagulhas e rating são gravados para o jogador."
+_NAO_GRAVA = (
+    "Este é o servidor público: no fim, Fagulhas e rating são calculados e mostrados, mas o resultado não é "
+    "gravado, e o perfil do jogador não muda."
+)
+_FLUXO_LOCAL = "Fluxo: iniciar_partida → ver_partida → jogar_peca ou passar_vez, até terminar."
+_FLUXO_PUBLICO = (
+    "Fluxo: iniciar_partida devolve um partida_id; passe esse mesmo partida_id em ver_partida, jogar_peca e "
+    "passar_vez, até terminar. O servidor não lembra a partida sem ele."
+)
+
+PartidaId = Annotated[
+    str,
+    Field(
+        description="O partida_id que iniciar_partida devolveu. Obrigatório no servidor público; "
+        "no local, vazio usa a última partida iniciada."
+    ),
+]
 
 
-def criar_servidor(repo: Repositorio | None = None) -> MCPServer:
-    """Sem repositório, usa o do .env (o mesmo banco do site)."""
+def instrucoes(publico: bool = False) -> str:
+    if publico:
+        return f"{_REGRAS} {_NAO_GRAVA}\n{_FLUXO_PUBLICO}"
+    return f"{_REGRAS} {_GRAVA}\n{_FLUXO_LOCAL}"
+
+
+INSTRUCOES = instrucoes()
+
+
+def criar_servidor(repo: Repositorio | None = None, *, publico: bool = False) -> MCPServer:
+    """Sem repositório, usa o do .env (o mesmo banco do site).
+
+    publico=True é o servidor do site (spec 012): não grava partidas e exige o partida_id.
+    """
     dados = repo if repo is not None else repositorio_do_ambiente()
-    mesa = Mesa()
-    servidor = MCPServer("circuitcrash", instructions=INSTRUCOES)
+    mesas = Mesas(publico=publico)
+    no_fim = "mostra o resultado, que não é gravado" if publico else "grava o resultado"
+    servidor = MCPServer("circuitcrash", instructions=instrucoes(publico))
 
     # ---------- leitura ----------
 
@@ -67,48 +98,72 @@ def criar_servidor(repo: Repositorio | None = None) -> MCPServer:
         return ranking.posicao_do_jogador(dados, apelido)
 
     @servidor.tool(name="ver_partida", annotations=SO_LEITURA)
-    def ver_partida() -> RespostaPartida:
+    def ver_partida(partida_id: PartidaId = "") -> RespostaPartida:
         """Mostra a partida em andamento: rodada, placar, peças da mão, casas ocupadas e jogadas válidas.
 
         Use quando precisar decidir a próxima jogada (antes de cada jogar_peca) ou quando pedirem o placar.
         Não muda nada. Sem partida em andamento, avisa para usar iniciar_partida.
         """
-        return partida.ver(mesa)
+        mesa = mesas.obter(partida_id)
+        return partida.ver(mesa) if mesa else mesas.nao_encontrada(partida_id)
 
     # ---------- escrita ----------
+    # As descrições destas tools dependem do modo, por isso vão em description e não na docstring.
 
-    @servidor.tool(name="iniciar_partida", annotations=ESCRITA)
+    @servidor.tool(
+        name="iniciar_partida",
+        annotations=ESCRITA,
+        description=(
+            "Começa a partida de demonstração jogando como esse jogador e devolve o partida_id dela. "
+            "Use quando pedirem para jogar uma partida. "
+            + (
+                "Servidor público: o resultado não é gravado. Passe o partida_id nas próximas chamadas."
+                if publico
+                else "A partida que estava em andamento fica para trás, sem gravar. "
+                "No fim, o resultado é gravado para esse jogador."
+            )
+        ),
+    )
     def iniciar_partida(
-        apelido: Annotated[str, Field(description="Apelido do jogador que vai jogar; o resultado é gravado para ele.")],
+        apelido: Annotated[str, Field(description='Apelido do jogador que vai jogar como "Você".')],
     ) -> RespostaPartida:
-        """Começa a partida de demonstração jogando como esse jogador.
+        mesa = mesas.nova()
+        resposta = partida.iniciar(dados, mesa, apelido)
+        if not resposta["ativa"]:
+            mesas.descartar(mesa)
+        return resposta
 
-        Use quando pedirem para jogar uma partida. Descarta, sem gravar, a partida que estiver em andamento.
-        """
-        return partida.iniciar(dados, mesa, apelido)
-
-    @servidor.tool(name="jogar_peca", annotations=ESCRITA)
+    @servidor.tool(
+        name="jogar_peca",
+        annotations=ESCRITA,
+        description=(
+            "Faz a jogada da vez: coloca a peça da mão, girada, numa casa vazia ligada ao seu circuito. "
+            "Use quando for a sua vez numa partida em andamento, de preferência com uma das jogadas_validas de "
+            "ver_partida. Jogada recusada não gasta a vez. Numa casa que já tem peça, gira essa peça do tabuleiro "
+            f"(gasta a vez). Na última rodada, {no_fim}."
+        ),
+    )
     def jogar_peca(
         peca: Annotated[int, Field(description="Índice da peça na mão, como em ver_partida (0 a 4).")],
         giros: Annotated[int, Field(description="Quantos giros de 90° no sentido horário antes de colocar (0 a 3).")],
         linha: Annotated[int, Field(description="Linha da casa, de 0 a 6.")],
         coluna: Annotated[int, Field(description="Coluna da casa, de 0 a 6.")],
+        partida_id: PartidaId = "",
     ) -> RespostaPartida:
-        """Faz a jogada da vez: coloca a peça da mão, girada, numa casa vazia ligada ao seu circuito.
+        mesa = mesas.obter(partida_id)
+        return partida.jogar(dados, mesa, peca, giros, linha, coluna) if mesa else mesas.nao_encontrada(partida_id)
 
-        Use quando for a sua vez numa partida em andamento, de preferência com uma das jogadas_validas de
-        ver_partida. Jogada recusada não gasta a vez. Numa casa que já tem peça, gira essa peça do tabuleiro
-        (gasta a vez). Na última rodada, grava o resultado.
-        """
-        return partida.jogar(dados, mesa, peca, giros, linha, coluna)
-
-    @servidor.tool(name="passar_vez", annotations=ESCRITA)
-    def passar_vez() -> RespostaPartida:
-        """Passa a vez sem jogar.
-
-        Use quando não houver jogada válida ou nenhuma ajudar a pontuar. Na última rodada, grava o resultado.
-        """
-        return partida.passar(dados, mesa)
+    @servidor.tool(
+        name="passar_vez",
+        annotations=ESCRITA,
+        description=(
+            "Passa a vez sem jogar. "
+            f"Use quando não houver jogada válida ou nenhuma ajudar a pontuar. Na última rodada, {no_fim}."
+        ),
+    )
+    def passar_vez(partida_id: PartidaId = "") -> RespostaPartida:
+        mesa = mesas.obter(partida_id)
+        return partida.passar(dados, mesa) if mesa else mesas.nao_encontrada(partida_id)
 
     return servidor
 

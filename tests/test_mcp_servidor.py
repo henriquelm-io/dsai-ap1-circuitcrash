@@ -15,9 +15,11 @@ ESCRITA = {"iniciar_partida", "jogar_peca", "passar_vez"}
 RAIZ = Path(__file__).resolve().parent.parent
 
 
-def _conversar(chamadas: list[tuple[str, dict[str, Any]]]) -> tuple[list[Any], list[Any], RepositorioMemoria]:
+def _conversar(
+    chamadas: list[tuple[str, dict[str, Any]]], *, publico: bool = False
+) -> tuple[list[Any], list[Any], RepositorioMemoria]:
     repo = RepositorioMemoria()
-    mcp = servidor.criar_servidor(repo)
+    mcp = servidor.criar_servidor(repo, publico=publico)
 
     async def conversa() -> tuple[list[Any], list[Any]]:
         async with Client(mcp) as cliente:
@@ -96,3 +98,89 @@ def test_instrucoes_explicam_o_que_o_agente_errou_no_diario() -> None:
     assert "o bônus é só seu" in servidor.INSTRUCOES
     assert "não jogam" in servidor.INSTRUCOES
     assert "não se perdem" in servidor.INSTRUCOES
+
+
+def _publico() -> tuple[Any, RepositorioMemoria]:
+    repo = RepositorioMemoria()
+    return servidor.criar_servidor(repo, publico=True), repo
+
+
+def test_servidor_publico_separa_as_partidas_pelo_id() -> None:
+    # Spec 012: o protocolo não tem sessão; cada pessoa leva o partida_id da sua partida.
+    mcp, _ = _publico()
+
+    async def conversa() -> tuple[Any, Any, Any, Any]:
+        async with Client(mcp) as ana, Client(mcp) as beto:
+            da_ana = (await ana.call_tool("iniciar_partida", {"apelido": "luma_dev"})).structured_content
+            do_beto = (await beto.call_tool("iniciar_partida", {"apelido": "voltz_br"})).structured_content
+            jogada = {"peca": 0, "giros": 0, "linha": 2, "coluna": 3, "partida_id": da_ana["partida_id"]}
+            await ana.call_tool("jogar_peca", jogada)
+            return (
+                da_ana,
+                do_beto,
+                await ana.call_tool("ver_partida", {"partida_id": da_ana["partida_id"]}),
+                await beto.call_tool("ver_partida", {"partida_id": do_beto["partida_id"]}),
+            )
+
+    da_ana, do_beto, ver_ana, ver_beto = anyio.run(conversa)
+    assert da_ana["partida_id"] and do_beto["partida_id"]
+    assert da_ana["partida_id"] != do_beto["partida_id"]
+    assert da_ana["partida_id"] in da_ana["mensagem"]
+    assert (ver_ana.structured_content["apelido"], ver_ana.structured_content["rodada"]) == ("luma_dev", 7)
+    assert (ver_beto.structured_content["apelido"], ver_beto.structured_content["rodada"]) == ("voltz_br", 6)
+
+
+def test_servidor_publico_sem_id_ou_com_id_desconhecido_responde_sem_erro() -> None:
+    _, resultados, _ = _conversar(
+        [
+            ("iniciar_partida", {"apelido": "luma_dev"}),
+            ("ver_partida", {}),
+            ("passar_vez", {}),
+            ("jogar_peca", {"peca": 0, "giros": 0, "linha": 2, "coluna": 3, "partida_id": "inventado"}),
+        ],
+        publico=True,
+    )
+    _, sem_id, passar_sem_id, desconhecido = resultados
+    for resultado in (sem_id, passar_sem_id, desconhecido):
+        assert not resultado.is_error
+        assert not resultado.structured_content["ativa"]
+        assert "iniciar_partida" in resultado.structured_content["mensagem"]
+    assert "partida_id" in sem_id.structured_content["mensagem"]
+    assert "'inventado' não encontrada" in desconhecido.structured_content["mensagem"]
+
+
+def test_servidor_publico_avisa_que_nao_grava_e_pede_o_id() -> None:
+    ferramentas, _, _ = _conversar([], publico=True)
+    por_nome = {f.name: f for f in ferramentas}
+    assert "não é gravado" in (por_nome["iniciar_partida"].description or "")
+    assert "partida_id" in (por_nome["iniciar_partida"].description or "")
+    for nome in ("ver_partida", "jogar_peca", "passar_vez"):
+        assert "partida_id" in por_nome[nome].input_schema["properties"], nome
+    publicas = servidor.instrucoes(publico=True)
+    assert "não é gravado" in publicas
+    assert "partida_id" in publicas
+    assert "o bônus é só seu" in publicas
+    assert "não é gravado" not in servidor.INSTRUCOES
+
+
+def test_partida_inteira_no_servidor_publico_nao_grava() -> None:
+    mcp, repo = _publico()
+
+    async def conversa() -> Any:
+        async with Client(mcp) as cliente:
+            inicio = await cliente.call_tool("iniciar_partida", {"apelido": "luma_dev"})
+            partida_id = inicio.structured_content["partida_id"]
+            jogada = {"peca": 0, "giros": 0, "linha": 2, "coluna": 3, "partida_id": partida_id}
+            await cliente.call_tool("jogar_peca", jogada)
+            for _ in range(6):
+                await cliente.call_tool("passar_vez", {"partida_id": partida_id})
+            return await cliente.call_tool("ver_partida", {"partida_id": partida_id})
+
+    final = anyio.run(conversa).structured_content
+    assert final["terminou"]
+    assert final["resultado"]["colocacao"] == 1
+    assert not final["resultado"]["gravado"]
+    assert "não grava" in final["mensagem"]
+    novato = repo.obter_jogador("novato")
+    assert novato is not None
+    assert novato.partidas == 2
