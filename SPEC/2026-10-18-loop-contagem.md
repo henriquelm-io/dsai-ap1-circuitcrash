@@ -1,6 +1,6 @@
 # Loop da contagem de linhas
 
-**Data:** 18/10/2026 · **Status:** em implementação · **Branch:** `013-loop-contagem` · **Detalhes:** `specs/013-loop-contagem/`
+**Data:** 18/10/2026 · **Status:** implementada e rodada em 18/10/2026 (parou na volta 1, passou), aguardando revisão · **Branch:** `013-loop-contagem` · **Detalhes:** `specs/013-loop-contagem/`
 
 ## O quê
 Um loop de agente para uma tarefa recorrente do CircuitCrash: **manter a seção "Contagem de linhas" do README igual ao `cloc`** com o comando do enunciado da AP1. O loop é desenhado em `loop/PROMPT.md` e rodado à mão: a dupla faz o papel do gatilho (abre uma sessão nova do agente) e do porteiro (roda a conferência e os testes e decide se para, tenta de novo ou escala). São no máximo três voltas.

@@ -127,7 +127,8 @@ uv run mypy
 | `specs/` | Spec, plan e tasks de cada funcionalidade (Spec Kit) |
 | `.specify/memory/constitution.md` | Regras do projeto |
 | `docs/banco-de-dados.md` | Guia para ligar o banco de dados |
-| `diario/` | Diário dos exercícios (servidor MCP) |
+| `diario/` | Diário dos exercícios (servidor MCP, loop) |
+| `loop/` | Loop da contagem de linhas: `PROMPT.md` do agente, permissões da volta, porteiro `conferir.py` e `ESTADO.md` das voltas |
 | `prompts/sessoes/` | Exportações das sessões com o agente de IA |
 
 ## Demonstração

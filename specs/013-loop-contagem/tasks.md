@@ -12,13 +12,13 @@
 - [x] T005 [H1] `loop/ESTADO.md` com o modelo de entrada; commit do loop antes da primeira volta
 
 ## Fase 3 — Voltas (H3)
-- [ ] T006 [H3] Volta 1: `claude -p` numa sessão nova; porteiro roda `conferir.py` e `pytest`, anota em `ESTADO.md` e decide
-- [ ] T007 [H3] Voltas 2 e 3, se a decisão for tentar de novo
-- [ ] T008 [H3] `diario/2026-10-13.md`: onde o loop parou, o que deu errado e o que automatizar primeiro
+- [x] T006 [H3] Volta 1: `claude -p` numa sessão nova; porteiro roda `conferir.py` e `pytest`, anota em `ESTADO.md` e decide — 18/10 19:07, PASSOU, decisão: parar
+- [x] T007 [H3] Voltas 2 e 3, se a decisão for tentar de novo — não precisou: a volta 1 passou
+- [x] T008 [H3] `diario/2026-10-13.md`: onde o loop parou, o que deu errado e o que automatizar primeiro
 
 ## Fase 4 — Acabamento
-- [ ] T009 [P] `README.md`: linha sobre a pasta `loop/` na tabela de estrutura; `SPEC/2026-10-18-loop-contagem.md` com o status
-- [ ] T010 `pytest`, `ruff check`, `ruff format --check` e `mypy` sem erros
+- [x] T009 [P] `README.md`: linha sobre a pasta `loop/` na tabela de estrutura; `SPEC/2026-10-18-loop-contagem.md` com o status
+- [x] T010 `pytest`, `ruff check`, `ruff format --check` e `mypy` sem erros
 
 ## Dependências
 Fase 1 → Fase 2 → Fase 3 → Fase 4. T002 e o commit do loop vêm antes da primeira volta, porque o `cloc` só conta arquivos versionados.

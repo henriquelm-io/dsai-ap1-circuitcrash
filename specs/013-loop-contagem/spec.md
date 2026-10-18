@@ -1,6 +1,6 @@
 # Spec 013 — Loop da contagem de linhas
 
-**Branch:** `013-loop-contagem` · **Status:** em implementação · **Criada em:** 18/10/2026 · **Dono:** Severino · **Origem:** [SPEC/2026-10-18-loop-contagem.md](../../SPEC/2026-10-18-loop-contagem.md)
+**Branch:** `013-loop-contagem` · **Status:** implementada e rodada em 18/10/2026 (parou na volta 1, passou), aguardando revisão · **Criada em:** 18/10/2026 · **Dono:** Severino · **Origem:** [SPEC/2026-10-18-loop-contagem.md](../../SPEC/2026-10-18-loop-contagem.md)
 
 ## Contexto
 Exercício da disciplina (slide "Exercício: um loop na aplicação da AP1"): projetar um loop para a aplicação e rodar uma versão manual dele, com a dupla no papel do gatilho e do porteiro. O enunciado pede:
