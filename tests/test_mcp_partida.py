@@ -5,7 +5,7 @@ import dataclasses
 from circuitcrash.dados.repositorio import Repositorio
 from circuitcrash.domain import tabuleiro
 from circuitcrash.mcps import partida
-from circuitcrash.mcps.partida import Mesa
+from circuitcrash.mcps.partida import Mesa, Mesas
 
 
 def _iniciada(repo: Repositorio, apelido: str = "luma_dev") -> Mesa:
@@ -209,3 +209,65 @@ def test_mesa_que_nao_grava_mostra_o_resultado_sem_mudar_o_repositorio(repo: Rep
     assert depois is not None
     assert (depois.partidas, depois.fagulhas, depois.rating) == (antes.partidas, antes.fagulhas, antes.rating)
     assert len(repo.partidas_recentes("novato")) == recentes
+
+
+class Relogio:
+    def __init__(self) -> None:
+        self.agora = 0.0
+
+    def __call__(self) -> float:
+        return self.agora
+
+
+def test_mesas_criam_ids_diferentes_e_acham_pelo_id(repo: Repositorio) -> None:
+    mesas = Mesas(publico=True)
+    primeira, segunda = mesas.nova(), mesas.nova()
+    assert len(primeira.partida_id) >= 12
+    assert primeira.partida_id != segunda.partida_id
+    assert mesas.obter(primeira.partida_id) is primeira
+    assert mesas.obter(f" {segunda.partida_id} ") is segunda
+    assert not primeira.grava
+    resposta = partida.iniciar(repo, primeira, "luma_dev")
+    assert resposta["partida_id"] == primeira.partida_id
+    assert primeira.partida_id in resposta["mensagem"]
+
+
+def test_id_vazio_e_a_ultima_partida_so_no_modo_local() -> None:
+    local = Mesas()
+    local.nova()
+    ultima = local.nova()
+    assert ultima.grava
+    assert local.obter("") is ultima
+    assert "iniciar_partida" in local.nao_encontrada("")["mensagem"]
+
+    publico = Mesas(publico=True)
+    publico.nova()
+    assert publico.obter("") is None
+    assert "partida_id" in publico.nao_encontrada("")["mensagem"]
+    assert "'xyz' não encontrada" in publico.nao_encontrada("xyz")["mensagem"]
+
+
+def test_mesas_paradas_expiram_e_o_limite_tira_a_usada_ha_mais_tempo() -> None:
+    relogio = Relogio()
+    mesas = Mesas(publico=True, validade=100, limite=2, relogio=relogio)
+    velha = mesas.nova()
+    relogio.agora = 60
+    usada = mesas.nova()
+    relogio.agora = 120
+    # A velha ficou parada 120 s; a usada, 60 s.
+    assert mesas.obter(velha.partida_id) is None
+    assert mesas.obter(usada.partida_id) is usada
+
+    terceira = mesas.nova()
+    quarta = mesas.nova()
+    # Limite 2: sai a usada há mais tempo.
+    assert mesas.obter(usada.partida_id) is None
+    assert mesas.obter(terceira.partida_id) is terceira
+    assert mesas.obter(quarta.partida_id) is quarta
+
+
+def test_descartar_tira_a_mesa() -> None:
+    mesas = Mesas(publico=True)
+    mesa = mesas.nova()
+    mesas.descartar(mesa)
+    assert mesas.obter(mesa.partida_id) is None

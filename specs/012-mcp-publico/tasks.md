@@ -8,9 +8,9 @@
 
 ## Fase 2 — Partidas por `partida_id` (H3)
 Refeita em 18/10 depois da correção da spec: a primeira versão guardava a mesa por sessão MCP, que o protocolo do SDK não tem.
-- [ ] T003 [H3] `tests/test_mcp_partida.py`: `Mesas` cria ids diferentes e difíceis de adivinhar, acha a mesa pelo id, a resposta traz `partida_id`, id vazio resolve para a última só no modo local, mesas paradas expiram e o limite tira a de uso mais antigo
-- [ ] T004 [H3] `tests/test_mcp_servidor.py`: no modo público, duas partidas por ids ficam separadas, id ausente ou desconhecido responde sem erro com instrução, a partida inteira não grava, e instruções e descrições dizem que não grava e pedem o `partida_id`; os testes da 011 continuam passando no modo local
-- [ ] T005 [H3] `mcps/partida.py`: `Mesa.partida_id` e `Mesas`; `mcps/servidor.py`: `criar_servidor(repo, publico=False)`, `partida_id` nas tools e instruções por modo; T003 e T004 passam
+- [x] T003 [H3] `tests/test_mcp_partida.py`: `Mesas` cria ids diferentes e difíceis de adivinhar, acha a mesa pelo id, a resposta traz `partida_id`, id vazio resolve para a última só no modo local, mesas paradas expiram e o limite tira a de uso mais antigo
+- [x] T004 [H3] `tests/test_mcp_servidor.py`: no modo público, duas partidas por ids ficam separadas, id ausente ou desconhecido responde sem erro com instrução, a partida inteira não grava, e instruções e descrições dizem que não grava e pedem o `partida_id`; os testes da 011 continuam passando no modo local
+- [x] T005 [H3] `mcps/partida.py`: `Mesa.partida_id` e `Mesas`; `mcps/servidor.py`: `criar_servidor(repo, publico=False)`, `partida_id` nas tools e instruções por modo; T003 e T004 passam
 
 ## Fase 3 — `/mcp` no site (H1)
 - [ ] T006 [H1] `tests/test_mcp_publico.py`: com o `lifespan` ligado, um cliente MCP por HTTP em `/mcp` lista as seis tools, consulta o ranking e joga pelo `partida_id`; `/health` continua respondendo
