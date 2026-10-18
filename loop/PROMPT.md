@@ -15,7 +15,9 @@ Deixar a seção `## Contagem de linhas` do `README.md` igual ao `cloc` de agora
    - a tabela: "Código (sem `tests/`)", "Testes (`tests/`)" e "**Total**", com ponto de milhar (`3.460`);
    - o bloco de código depois de `### Código` e o depois de `### Testes`: cole a tabela do `cloc` exatamente como o passo 1 mostrou, da primeira à última linha de traços.
    Mantenha o resto da seção (o comando do `cloc` e as explicações) como está.
-3. Confira você mesmo: `uv run python loop/conferir.py`. Se disser `NÃO PASSOU`, corrija o que ele listou e confira de novo.
+3. Confira você mesmo: `uv run python loop/conferir.py`. Se disser `NÃO PASSOU`, corrija o que ele listou e confira de novo. Depois, `uv run pytest -q`.
+
+**Rode um comando por vez**, exatamente como estão escritos aqui, sem juntar com `;`, `&&`, `|`, `echo` ou `cd`. As permissões desta volta só liberam cada comando sozinho; um comando composto é negado e você perde um turno.
 4. Termine com um resumo curto: o que mudou no README e a última saída do `conferir.py`.
 
 ## Critério de parada (conferido por máquina)
