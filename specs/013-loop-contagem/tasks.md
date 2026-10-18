@@ -20,5 +20,8 @@
 - [x] T009 [P] `README.md`: linha sobre a pasta `loop/` na tabela de estrutura; `SPEC/2026-10-18-loop-contagem.md` com o status
 - [x] T010 `pytest`, `ruff check`, `ruff format --check` e `mypy` sem erros
 
+## Fase 5 — Depois do segundo evento
+- [x] T011 [H1] `loop/PROMPT.md`: pedir um comando por vez. Nas voltas 1 e 2, o agente juntou `conferir.py` e `pytest` num comando só, foi negado pelas permissões e perdeu um turno (`loop/ESTADO.md`)
+
 ## Dependências
 Fase 1 → Fase 2 → Fase 3 → Fase 4. T002 e o commit do loop vêm antes da primeira volta, porque o `cloc` só conta arquivos versionados.
